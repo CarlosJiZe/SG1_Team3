@@ -1,0 +1,31 @@
+GreenGridSim — Development Log
+Date: 2026-02-05
+Team: Team 3
+
+Member: Carlos Jimenez Zepeda
+
+Summary
+Today I created the base structure of the project and initialized the GitHub repository. I also implemented the first three core components of the digital twin as Python classes: Battery, CloudCoverage, and SolarPanel.
+
+Work completed
+1) Project setup
+- Created the initial folder structure (src/, tests/, results/, Development_logs/, Personal_reflections/).
+- Initialized the GitHub repository and pushed the base scaffold.
+
+2) Core classes implemented (src/)
+- Battery.py: battery model with capacity (kWh), minimum SoC constraint, and round-trip efficiency handling.
+- CloudCoverage.py: seasonal cloud coverage generator using weighted probabilities and coverage ranges.
+- SolarPanel.py: solar generation model based on time-of-day and cloud coverage reduction.
+
+3) Testing and verification (tests/)
+- I used AI assistance to generate initial test files to validate that my implementation behaved correctly (basic sanity checks for charge/discharge behavior, seasonal cloud distributions, and solar generation across different hours).
+- During testing, I noticed the solar generation function was producing weird/unrealistic values. The AI helped me identify why the formula/mapping was wrong and guided me to correct the time-to-angle setup so the curve behaves as expected (zero at night, peak around midday) and then apply cloud coverage as a proportional reduction.
+- This was very helpful because it confirmed my code was working and clarified the reason behind the incorrect results I was seeing.
+
+Notes / Issues
+- Main issue today was the incorrect solar generation behavior due to the initial formula setup. After fixing the mapping and re-running tests, results became consistent with expectations.
+
+Next steps
+- Implement Inverter class with clipping and failure simulation
+- Implement Load class with base + random spikes
+- Implement Grid class with import/export tracking
