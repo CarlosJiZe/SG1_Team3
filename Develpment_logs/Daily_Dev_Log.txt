@@ -64,3 +64,54 @@ Next Steps
 - Implement EnergyManagementSystem class with three priority strategies (LOAD_PRIORITY, CHARGE_PRIORITY, PRODUCE_PRIORITY)
 - Create main Simulation class using SimPy for discrete-event simulation
 - Integrate all components into time-stepped simulation loop
+
+Date: 2026-02-07  
+Team: Team 3
+
+Member: Carlos Jimenez Zepeda  
+
+Summary
+Today I completed the most complex component of the project: the EnergyManagementSystem (EMS). This "brain" of the system manages energy distribution across three different priority strategies and implements automatic curtailment logic. I also clarified important design decisions about zero export policies and unmet load tracking through detailed discussions about system behavior.
+
+Work Completed
+
+1) Core class implemented (src/)
+
+EnergyManagementSystem.py:
+- Implemented three priority strategies for energy distribution:
+  - LOAD_PRIORITY: Prioritizes house load first, then battery charging, then grid export
+  - CHARGE_PRIORITY: Prioritizes battery charging first, then house load, then grid export
+  - PRODUCE_PRIORITY: Prioritizes grid export first (up to 20 kW limit), then battery, then house load
+- Automatic curtailment when battery is full and excess solar would be exported
+
+2) Design decisions and clarifications
+
+Unmet Load Interpretation:
+- Initially unclear whether "unmet load" meant total system failure or grid dependency
+- Clarified that unmet_load = grid_to_load (energy that solar+battery couldn't provide)
+- This metric measures system self-sufficiency: higher unmet load = more grid dependent
+- Important distinction: with unlimited grid, loads are always met, but internal system may fail to provide
+
+3) Testing and verification
+
+Comprehensive test suite created (tests/testEMS.py):
+- Tested all three strategies with multiple scenarios each
+- Verified curtailment behavior (battery full vs not full)
+- Tested zero export policy (grid limit = 0)
+- Verified unmet load tracking with empty battery scenarios
+- Confirmed financial calculations for PRODUCE_PRIORITY
+
+Notes / Issues
+
+Main learnings:
+- Understanding "unmet load" as a measure of system self-sufficiency (not total failure) was crucial for proper implementation
+- Strategy differences primarily affect behavior during excess solar generation, not deficit handling
+- Curtailment serves multiple purposes: respecting grid limits, preventing equipment wear, enforcing zero-export policies
+- Financial arbitrage in PRODUCE_PRIORITY is counterintuitive but economically rational
+
+Next Steps
+
+Immediate (next session):
+- Implement Simulation class using SimPy for discrete-event simulation
+- Integrate all 7 completed components (Battery, SolarPanel, CloudCoverage, Inverter, Load, Grid, EMS)
+- Create main simulation loop with hourly time steps
