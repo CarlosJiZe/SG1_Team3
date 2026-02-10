@@ -401,8 +401,9 @@ class Simulation:
             if not h['inverter_operational']
         ) * (self.time_step_minutes / 60.0)
         
-        unmet_load_hours = sum(1 for h in self.hourly_data if h['unmet_load'] > 0)
-        total_hours = len(self.hourly_data)
+        time_step_hours = self.time_step_minutes / 60.0
+        unmet_load_hours = sum(1 for h in self.hourly_data if h['unmet_load'] > 0) * time_step_hours
+        total_hours = len(self.hourly_data) * time_step_hours
         unmet_load_percentage = (unmet_load_hours / total_hours * 100) if total_hours > 0 else 0
         
         # Correct self-sufficiency formula
