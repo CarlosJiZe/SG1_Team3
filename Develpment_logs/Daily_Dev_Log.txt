@@ -147,3 +147,47 @@ Next Steps
 - Run the final set of simulations to answer the 15 project questions.
 - Compile the final report summarizing design choices and strategy comparisons.
 - Write personal reflections and clean up code for final submission.
+
+Date: 2026-02-09  
+Team: Team 3  
+
+Member: Carlos Jimenez Zepeda  
+
+Summary
+Today was dedicated to debugging and verification. After running test simulations, I noticed unusual energy values and inconsistent self-sufficiency percentages. I used AI assistance to conduct a thorough code review that identified 7 potential bugs. I successfully fixed 6 critical issues affecting energy balance, battery efficiency, and metric calculations. The 7th was a nomenclature clarification, not an actual bug.
+
+Work Completed
+
+1) Critical bugs fixed (Simulation.py, Battery.py, DataLogger.py)
+- Fixed day change detection using modulo-based logic instead of old step values
+- Corrected curtailed energy accounting (was being counted as generated solar)
+- Fixed inverter.update() to run every timestep instead of once per day (allows sub-day failures)
+- Corrected self-sufficiency formula from `((solar - import)/load) * 100` to `(1 - import/load) * 100`
+- Modified Battery.charge() to return energy CONSUMED from source (including efficiency losses), not energy stored
+- Replaced hardcoded battery thresholds with config-based values
+
+2) Verification and validation
+- Re-ran 30-day simulation with same seed (519425893)
+- Energy balance improved from ~13.66 kWh error to 0.000009 kWh (essentially perfect)
+- Confirmed all 720 timesteps respect battery limits (5%-100%)
+- Validated consistency between hourly_data.csv, answers.txt, and comparison_report.txt
+
+3) Format corrections and condition restoration
+- Had to revert some initial fixes that broke simulation flow
+- Restored previous working conditions but with corrected logic
+- Learned to make incremental changes and test after each one
+
+Notes / Issues
+
+Main learnings:
+- Energy conservation is critical - small accounting errors compound over time
+- Battery efficiency is subtle: must distinguish energy consumed vs stored vs rejected
+- Curtailment = generation PREVENTED (not generated then wasted)
+- Had to revert and retry fixes when first attempts broke cloud coverage update timing
+
+AI assistance helped identify the battery efficiency bug (BUG 5) which was the most subtle - efficiency losses were being treated as exportable energy instead of heat loss.
+
+Next Steps
+- Run final verification with multiple random seeds
+- Write personal reflection about debugging process
+- Prepare final report with corrected metrics for submission
