@@ -20,6 +20,8 @@ import json
 import os
 from datetime import datetime
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def print_header():
     """Print comparison tool header."""
     print("\n" + "=" * 70)
@@ -43,7 +45,7 @@ def print_header():
 
 def load_base_config():
     """Load base configuration from config.json."""
-    with open('config.json', 'r') as f:
+    with open(os.path.join(BASE_DIR, 'config.json'), 'r') as f:
         return json.load(f)
 
 def run_strategy_comparison(base_config):
@@ -96,7 +98,7 @@ def run_strategy_comparison(base_config):
         config['simulation']['random_seed'] = comparison_seed  # Same seed for all
         
         # Save temporary config
-        temp_config_path = f'temp_config_{strategy}.json'
+        temp_config_path = os.path.join(BASE_DIR, f'temp_config_{strategy}.json')
         with open(temp_config_path, 'w') as f:
             json.dump(config, f, indent=2)
         
@@ -171,7 +173,7 @@ def run_season_comparison(base_config):
         config['simulation']['random_seed'] = comparison_seed  # Same seed for all
         
         # Save temporary config
-        temp_config_path = f'temp_config_{season}.json'
+        temp_config_path = os.path.join(BASE_DIR, f'temp_config_{season}.json')
         with open(temp_config_path, 'w') as f:
             json.dump(config, f, indent=2)
         
@@ -533,9 +535,10 @@ def main():
         
         # Save report
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        report_filename = f"results/comparison_report_{timestamp}.txt"
+        results_dir = os.path.join(BASE_DIR, 'results')
+        report_filename = os.path.join(results_dir, f"comparison_report_{timestamp}.txt")
         
-        os.makedirs('results', exist_ok=True)
+        os.makedirs(results_dir, exist_ok=True)
         with open(report_filename, 'w') as f:
             f.write(report)
         

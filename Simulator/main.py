@@ -15,6 +15,8 @@ Universidad Panamericana, Guadalajara
 from src.Simulation import Simulation
 from src.DataLogger import DataLogger
 import sys
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def print_header():
     """Print welcome header."""
@@ -86,8 +88,8 @@ def main():
         print_header()
         
         # Load and display configuration
-        print("\n🔧 Loading configuration from config.json...")
-        sim = Simulation(config_path='config.json')
+        print("\n Loading configuration from config.json...")
+        sim = Simulation(config_path=os.path.join(BASE_DIR, 'config.json'))
         print_configuration_info(sim.config)
         
         # Confirm before running
@@ -106,7 +108,7 @@ def main():
         print(" SAVING SIMULATION DATA")
         print("=" * 70)
         
-        logger = DataLogger(results, sim.config, output_dir='results')
+        logger = DataLogger(results, sim.config, output_dir=os.path.join(BASE_DIR, 'results'))
         saved_files = logger.save_all()
         
         # Print saved files
