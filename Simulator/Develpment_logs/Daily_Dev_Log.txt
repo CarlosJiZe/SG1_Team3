@@ -223,7 +223,7 @@ Team: Team 3
 Member: Martin García
 
 Summary:
-See the canges and rerun some test and cases after all the corrections
+See the changes and rerun some test and cases after all the corrections
 
 Work completed:
 
