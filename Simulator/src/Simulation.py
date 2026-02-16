@@ -391,22 +391,79 @@ class Simulation:
         Returns:
             dict: Complete results dictionary
         """
+        # Calculate totals
         total_solar = sum(d['solar_generated_kwh'] for d in self.daily_summaries)
         total_load = sum(d['load_consumed_kwh'] for d in self.daily_summaries)
         total_import = sum(d['grid_imported_kwh'] for d in self.daily_summaries)
         total_export = sum(d['grid_exported_kwh'] for d in self.daily_summaries)
         total_curtailed = sum(d['curtailed_kwh'] for d in self.daily_summaries)
+        
+        # Calculate self-sufficiency
+        self_sufficiency = ((total_load - total_import) / total_load * 100) if total_load > 0 else 0
+        
+        # Calculate average battery SoC
+        avg_soc = sum(h['battery_soc'] for h in self.hourly_data) / len(self.hourly_data) if self.hourly_data else 0
+        final_soc = self.battery.get_soc()
+        
+        # Count inverter failures
+        inverter_failures = sum(1 for e in self.events_log if 'FAILURE' in e.get('message', ''))
+        
+        # Calculate unmet load
+        time_step_hours = self.time_step_minutes / 60.0
+        total_unmet = sum(h['unmet_load'] for h in self.hourly_data) * time_step_hours
+        unmet_percentage = (total_unmet / total_load * 100) if total_load > 0 else 0
+        
+        # Calculate hours with unmet load
+        hours_with_unmet = sum(time_step_hours for h in self.hourly_data if h['unmet_load'] > 0)
+        
+        # Get financial data from grid
+        total_import_cost = self.grid.get_total_cost()
+        total_export_revenue = self.grid.get_total_revenue()
+        net_cost = total_import_cost - total_export_revenue
+        
+        # System configuration summary
+        battery_total = self.battery_count * self.config['battery']['unit_capacity_kwh']
+        solar_total = self.solar_count * self.config['solar']['unit_peak_power_kw']
+        inverter_total = self.inverter_count * self.config['inverter']['unit_max_output_kw']
 
         return {
             'config_used': self.config,
             'hourly_data': self.hourly_data,
             'daily_summaries': self.daily_summaries,
             'events_log': self.events_log,
-            'totals': {
-                'solar_kwh': total_solar,
-                'load_kwh': total_load,
-                'grid_import_kwh': total_import,
-                'grid_export_kwh': total_export,
-                'curtailed_kwh': total_curtailed
+            
+            'summary': {
+                'total_solar_generated_kwh': total_solar,
+                'total_load_consumed_kwh': total_load,
+                'total_grid_imported_kwh': total_import,
+                'total_grid_exported_kwh': total_export,
+                'total_curtailed_kwh': total_curtailed,
+                'self_sufficiency_percent': self_sufficiency
+            },
+            
+            'financial': {
+                'total_import_cost': total_import_cost,
+                'total_export_revenue': total_export_revenue,
+                'net_cost': net_cost
+            },
+            
+            'battery': {
+                'average_soc_percent': avg_soc,
+                'final_soc_percent': final_soc
+            },
+            
+            'reliability': {
+                'inverter_failures': inverter_failures,
+                'unmet_load_percentage': unmet_percentage,
+                'hours_with_unmet_load': hours_with_unmet
+            },
+            
+            'system': {
+                'battery_capacity_kwh': battery_total,
+                'battery_count': self.battery_count,
+                'solar_peak_kw': solar_total,
+                'solar_count': self.solar_count,
+                'inverter_max_kw': inverter_total,
+                'inverter_count': self.inverter_count
             }
         }

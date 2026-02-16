@@ -401,10 +401,10 @@ def generate_comparison_report(strategy_results, season_results, base_config):
     report.append("-" * 70)
     
     # Cloud coverage
-    spring_cloud = sum(h['cloud_coverage'] for h in season_results['spring']['data']['hourly_data']) / len(season_results['spring']['data']['hourly_data'])
-    summer_cloud = sum(h['cloud_coverage'] for h in season_results['summer']['data']['hourly_data']) / len(season_results['summer']['data']['hourly_data'])
-    fall_cloud = sum(h['cloud_coverage'] for h in season_results['fall']['data']['hourly_data']) / len(season_results['fall']['data']['hourly_data'])
-    winter_cloud = sum(h['cloud_coverage'] for h in season_results['winter']['data']['hourly_data']) / len(season_results['winter']['data']['hourly_data'])
+    spring_cloud = sum(h['cloud_coverage'] for h in season_results['spring']['hourly_data']) / len(season_results['spring']['hourly_data'])
+    summer_cloud = sum(h['cloud_coverage'] for h in season_results['summer']['hourly_data']) / len(season_results['summer']['hourly_data'])
+    fall_cloud = sum(h['cloud_coverage'] for h in season_results['fall']['hourly_data']) / len(season_results['fall']['hourly_data'])
+    winter_cloud = sum(h['cloud_coverage'] for h in season_results['winter']['hourly_data']) / len(season_results['winter']['hourly_data'])
     
     report.append(f"{'Avg Cloud Coverage':<30} | "
                  f"{spring_cloud:>10.2f} | "
