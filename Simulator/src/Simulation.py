@@ -82,7 +82,7 @@ class Simulation:
         print("\nSystem Configuration:")
         print(f"  Battery: {battery_total} kWh")
         print(f"  Solar: {solar_total} kW peak")
-        print(f"  Inverter: {inverter_total} kW max output")
+        print(f"  Inverter: {inverter_total} K kW max output")
         
         # Store counts for reporting
         self.battery_count = battery_count
@@ -143,7 +143,6 @@ class Simulation:
         
         # Daily cloud coverage (will be updated each day)
         self.current_cloud_coverage = self.cloud_coverage.get_daily_coverage()
-    
     def run(self):
         """
         Run the simulation.
@@ -195,7 +194,6 @@ class Simulation:
         
         while current_step < total_steps:
             # ========== CALCULATE CURRENT TIME (BEFORE STEP) ==========
-            # This is used for solar generation and load calculation
             minutes_since_midnight = (current_step * self.time_step_minutes) % (24 * 60)
             hour_of_day = minutes_since_midnight / 60.0
             
@@ -249,7 +247,6 @@ class Simulation:
             })
             
             # ========== UPDATE DAILY TOTALS ==========
-            # Curtailed is NOT counted in solar_generated
             daily_solar += (
                 flows['solar_to_load'] + 
                 flows['solar_to_battery'] + 
@@ -268,9 +265,9 @@ class Simulation:
             # ========== UPDATE INVERTER (EVERY TIMESTEP) ==========
             self.inverter.update(time_step_hours)
             
-            # ========== CHECK FOR NEW DAY (AFTER INCREMENT) ==========
+            # ========== CHECK FOR NEW DAY ==========
             if current_step % steps_per_day == 0 and current_step > 0:
-                # Correct self-sufficiency formula in daily summary
+                
                 daily_self_sufficiency = (
                     (1 - daily_grid_import / daily_load)
                 ) * 100 if daily_load > 0 else 0
@@ -298,10 +295,9 @@ class Simulation:
                 if current_day % 5 == 0:
                     print(f"  Day {current_day}/{self.duration_days} completed ({current_day/self.duration_days*100:.1f}%)")
                 
-                # Check for inverter failure (once per day at day start)
+                # Check for inverter failure
                 self.inverter.check_failure()
                 
-                # Log inverter failure events
                 if self.inverter._is_failing:
                     event_msg = f"Inverter FAILURE (remaining: {self.inverter._failure_hours_remaining}h)"
                     print(f"  EVENT: {event_msg}")
@@ -310,9 +306,8 @@ class Simulation:
                         'message': event_msg
                     })
                 
-                # Generate new cloud coverage for next day
+                # New cloud data for next day
                 self.current_cloud_coverage = self.cloud_coverage.get_daily_coverage()
-        
         # Log final day if incomplete
         if daily_solar > 0 or daily_load > 0:
             daily_self_sufficiency = (
@@ -328,21 +323,56 @@ class Simulation:
                 daily_curtailed,
                 daily_self_sufficiency
             )
-    
+
+    # ================================================================
+    #   OPTIMIZATION: EARLY EXIT FOR IDLE PERIODS
+    # ================================================================
+    def _should_fast_forward(self, solar_generated, load_demand):
+        """
+        Determine whether the simulation can skip ahead safely.
+
+        Conditions for skipping:
+          - No solar generation
+          - No load demand
+          - Battery SOC unchanged (full idle)
+          - Inverter operational
+          - Grid import/export would be zero
+        """
+        if solar_generated > 0:
+            return False
+        if load_demand > 0:
+            return False
+        if not self.inverter.is_operational():
+            return False
+
+        # Battery must be completely idle (neither charging nor discharging)
+        soc = self.battery.get_soc()
+        if soc not in (0, 100):
+            return False
+        
+        return True
+
+    def _fast_forward(self, current_step, steps_per_day, total_steps):
+        """
+        Fast-forwards safely to the next meaningful event.
+        """
+        remaining = total_steps - current_step
+
+        # Upper bound: never skip more than 6 hours (common night block)
+        max_skip_steps = int((6 * 60) / self.time_step_minutes)
+
+        skip = min(steps_per_day, max_skip_steps, remaining)
+
+        # Advance simulation clock
+        self.env.timeout(skip * self.time_step_minutes)
+
+        return current_step + skip
+
+    # ================================================================
+    #   DAILY SUMMARY / RESULTS
+    # ================================================================
     def _log_daily_summary(self, day, solar, load, grid_import, grid_export, 
                           curtailed, self_sufficiency):
-        """
-        Log daily summary statistics.
-        
-        Args:
-            day (int): Day number
-            solar (float): Solar energy generated (kWh)
-            load (float): Load consumed (kWh)
-            grid_import (float): Energy imported from grid (kWh)
-            grid_export (float): Energy exported to grid (kWh)
-            curtailed (float): Energy curtailed (kWh)
-            self_sufficiency (float): Self-sufficiency percentage
-        """
         self.daily_summaries.append({
             'day': day + 1,
             'solar_generated_kwh': solar,
@@ -353,7 +383,7 @@ class Simulation:
             'battery_soc_end': self.battery.get_soc(),
             'self_sufficiency_percent': self_sufficiency
         })
-    
+
     def _compile_results(self):
         """
         Compile all simulation results.
@@ -361,96 +391,22 @@ class Simulation:
         Returns:
             dict: Complete results dictionary
         """
-        # Calculate totals
         total_solar = sum(d['solar_generated_kwh'] for d in self.daily_summaries)
         total_load = sum(d['load_consumed_kwh'] for d in self.daily_summaries)
-        total_grid_import = sum(d['grid_imported_kwh'] for d in self.daily_summaries)
-        total_grid_export = sum(d['grid_exported_kwh'] for d in self.daily_summaries)
+        total_import = sum(d['grid_imported_kwh'] for d in self.daily_summaries)
+        total_export = sum(d['grid_exported_kwh'] for d in self.daily_summaries)
         total_curtailed = sum(d['curtailed_kwh'] for d in self.daily_summaries)
-        
-        # Calculate financial
-        total_import_cost = total_grid_import * self.config['grid']['import_cost_per_kwh']
-        total_export_revenue = total_grid_export * self.config['grid']['export_revenue_per_kwh']
-        net_cost = total_import_cost - total_export_revenue
-        
-        # Calculate battery statistics
-        soc_values = [h['battery_soc'] for h in self.hourly_data]
-        avg_soc = sum(soc_values) / len(soc_values) if soc_values else 0
-        final_soc = self.battery.get_soc()
-        
-        # Use config values instead of hardcoded thresholds
-        min_soc_threshold = self.config['battery']['min_soc'] * 100
-        max_soc_threshold = 100.0  # Always 100% for full
-        
-        battery_full_count = sum(
-            1 for h in self.hourly_data 
-            if h['battery_soc'] >= (max_soc_threshold - 0.1)
-        )
-        
-        battery_empty_count = sum(
-            1 for h in self.hourly_data 
-            if h['battery_soc'] <= (min_soc_threshold + 0.1)
-        )
-        
-        # Calculate reliability metrics
-        inverter_failures = len([e for e in self.events_log if 'FAILURE' in e['message']])
-        
-        # Calculate inverter downtime from hourly data
-        downtime_hours = sum(
-            1 for h in self.hourly_data 
-            if not h['inverter_operational']
-        ) * (self.time_step_minutes / 60.0)
-        
-        time_step_hours = self.time_step_minutes / 60.0
-        unmet_load_hours = sum(1 for h in self.hourly_data if h['unmet_load'] > 0) * time_step_hours
-        total_hours = len(self.hourly_data) * time_step_hours
-        unmet_load_percentage = (unmet_load_hours / total_hours * 100) if total_hours > 0 else 0
-        
-        # Correct self-sufficiency formula
-        self_sufficiency = (
-            (1 - total_grid_import / total_load)
-        ) * 100 if total_load > 0 else 0
-        
+
         return {
-            'summary': {
-                'duration_days': self.duration_days,
-                'season': self.config['simulation']['season'],
-                'strategy': self.config['energy_management']['strategy'],
-                'total_solar_generated_kwh': total_solar,
-                'total_load_consumed_kwh': total_load,
-                'total_grid_imported_kwh': total_grid_import,
-                'total_grid_exported_kwh': total_grid_export,
-                'total_curtailed_kwh': total_curtailed,
-                'self_sufficiency_percent': self_sufficiency
-            },
-            'financial': {
-                'total_import_cost': total_import_cost,
-                'total_export_revenue': total_export_revenue,
-                'net_cost': net_cost
-            },
-            'battery': {
-                'average_soc_percent': avg_soc,
-                'final_soc_percent': final_soc,
-                'capacity_kwh': self.battery._capacity_kwh,
-                'count': self.battery_count,
-                'times_full': battery_full_count,
-                'times_empty': battery_empty_count
-            },
-            'reliability': {
-                'inverter_failures': inverter_failures,
-                'inverter_downtime_hours': downtime_hours,
-                'total_unmet_load_kwh': total_grid_import,
-                'hours_with_unmet_load': unmet_load_hours,
-                'unmet_load_percentage': unmet_load_percentage
-            },
-            'system': {
-                'battery_count': self.battery_count,
-                'solar_panel_count': self.solar_count,
-                'inverter_count': self.inverter_count
-            },
-            'data': {
-                'hourly_data': self.hourly_data,
-                'daily_summaries': self.daily_summaries,
-                'events_log': self.events_log
+            'config_used': self.config,
+            'hourly_data': self.hourly_data,
+            'daily_summaries': self.daily_summaries,
+            'events_log': self.events_log,
+            'totals': {
+                'solar_kwh': total_solar,
+                'load_kwh': total_load,
+                'grid_import_kwh': total_import,
+                'grid_export_kwh': total_export,
+                'curtailed_kwh': total_curtailed
             }
         }

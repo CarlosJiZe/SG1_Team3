@@ -268,3 +268,33 @@ Work completed:
 -See if the instructions are cristal clear
 -Add the Troubleshooting that is commond and how to fix it
 -Add the LICENSE already in the project to it
+
+
+
+Date: 2026-02-16
+Team: Team 3  
+
+Member: Andrés González
+
+Summary: 
+Today I reviewed the EMS logic to ensure the simulation behaves correctly and looked for realistic optimization opportunities. I implemented a safe early-exit check in the EMS to avoid unnecessary battery-charging computations when the battery is already full. After applying this change, I ran a full 30-day simulation and confirmed that performance improved slightly while system behavior, physics, and energy outputs remained fully consistent.
+
+Work Completed
+1) System review and optimization identification
+-Analyzed EMS run flow and validated dependencies between components.
+-Detected redundant charging attempts during periods when the battery is already at maximum SoC.
+
+2) Implemented early-exit optimization (EMS.py)
+-Added battery.is_full() check to skip charge-related logic when not needed.
+-Ensured no changes to actual energy routing, only reduced computation.
+-Verified full compatibility with inverter limits and SoC constraints.
+
+3) Validation
+-Executed a complete 30-day simulation.
+-No regressions or behavioral changes detected.
+-Battery, solar, grid, and load metrics remained coherent with previous runs.
+
+Notes / Issues:
+-Optimization does not alter results, only reduces unnecessary execution.
+-Battery model remains stable; no further changes needed.
+-Importance of validating any optimization with multi-day tests.
