@@ -114,7 +114,6 @@ class Simulation:
             avr_days_in_failure=self.config['inverter']['avr_days_in_failure'],
             min_failure_duration=self.config['inverter']['min_failure_duration_hours'],
             max_failure_duration=self.config['inverter']['max_failure_duration_hours'],
-            seed=self.actual_seed + 1  # Different seed for inverter randomness
         )
         
         self.load = Load(

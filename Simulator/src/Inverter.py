@@ -108,3 +108,4 @@ class Inverter:
             #Step 6: Inverter recovers
             self._is_failing = False
             self._total_downtime_hours += failure_duration
+            
