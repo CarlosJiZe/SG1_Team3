@@ -14,7 +14,7 @@ class Inverter:
     """
     
     def __init__(self, max_output_kw, avr_days_in_failure = 200, 
-                 min_failure_duration=4, max_failure_duration=72, seed=None):
+                 min_failure_duration=4, max_failure_duration=72):
         """
         Initialize inverter.
         
@@ -33,7 +33,6 @@ class Inverter:
 
         self._total_downtime_hours = 0.0
         self.current_failure_duration = 0.0
-        self._rng = random.Random(seed)
     
     def apply_limit(self, solar_generation):
         """
@@ -88,7 +87,7 @@ class Inverter:
         while True:
             #Step 1: Calculate when the next failure will occur
             avr_hours_in_failure = self._avr_days_in_failure *24 #Convert days to hours
-            hours_until_failure = self._rng.expovariate(1/avr_hours_in_failure)
+            hours_until_failure = random.expovariate(1/avr_hours_in_failure)
 
             #Step 2: Sleep until failure occurs
             yield env.timeout(hours_until_failure*60) #Convert hours to minutes for env.timeout
@@ -98,7 +97,7 @@ class Inverter:
             self.total_failures += 1
 
             #Step 4: Calculate failure duration
-            failure_duration = self._rng.uniform(
+            failure_duration = random.uniform(
                 self._min_failure_duration, self._max_failure_duration
             )
             self.current_failure_duration = failure_duration
