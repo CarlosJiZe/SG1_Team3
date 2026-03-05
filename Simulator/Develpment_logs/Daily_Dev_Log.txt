@@ -298,3 +298,39 @@ Notes / Issues:
 -Optimization does not alter results, only reduces unnecessary execution.
 -Battery model remains stable; no further changes needed.
 -Importance of validating any optimization with multi-day tests. 
+
+Date: 2026-03-04
+Team: Team 3
+
+Member: Carlos Jimenez Zepeda
+Summary
+Refactored the inverter failure modeling to use a proper SimPy parallel process with exponential distribution, as per professor feedback. Several bugs were encountered and resolved during the process.
+
+Work Completed
+
+1) Inverter refactor (src/Inverter.py)
+- Removed check_failure() and update() methods
+- Implemented failure_process(env) as an independent SimPy generator
+- Used exponential distribution to model time between failures
+- Added current_failure_duration attribute for accurate event logging
+
+
+2) Simulation update (src/Simulation.py)
+- Registered failure_process() as a parallel SimPy process in run()
+- Updated _compile_results() to calculate failures and downtime from hourly_data
+- Added inverter_was_operational flag to detect exact failure timestamps
+
+
+3) Bug fixes (with AI assistance)
+- Infinite loop: env.run() never terminated because failure_process has a while True loop. Fixed with env.run(until=total_minutes)
+- Unit mismatch: failure_process was passing hours to env.timeout() but the environment uses minutes. Fixed by multiplying timeouts by 60
+- Failure overcounting: _total_downtime_hours accumulated values beyond simulation window. Fixed by deriving both metrics from hourly_data
+- Events log duplicates: log was writing one entry per day the inverter was down instead of one per failure. Fixed with inverter_was_operational state tracking per tick
+
+Notes
+
+- The refactor changed the random number consumption order, so seed 519425893 no longer reproduces Part 1 results exactly. Correctness is not affected.
+
+Next Steps
+
+- Begin neighborhood-scale simulation upgrade for Part 2
