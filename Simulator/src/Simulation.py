@@ -2,6 +2,11 @@
 Simulation Module - Main orchestrator for GreenGrid digital twin
 
 This module coordinates all components and runs the discrete-event simulation.
+
+Fix: Refactor version (changes):
+- Inverter failure is now a separate Simpy process
+- Replaces check_failure() and update() calls
+- Failure counter now read from inverter object
 """
 
 import simpy
@@ -106,9 +111,10 @@ class Simulation:
         
         self.inverter = Inverter(
             max_output_kw=inverter_total,
-            failure_rate=self.config['inverter']['failure_rate'],
+            avr_days_in_failure=self.config['inverter']['avr_days_in_failure'],
             min_failure_duration=self.config['inverter']['min_failure_duration_hours'],
-            max_failure_duration=self.config['inverter']['max_failure_duration_hours']
+            max_failure_duration=self.config['inverter']['max_failure_duration_hours'],
+            seed=self.actual_seed + 1  # Different seed for inverter randomness
         )
         
         self.load = Load(
@@ -143,6 +149,7 @@ class Simulation:
         
         # Daily cloud coverage (will be updated each day)
         self.current_cloud_coverage = self.cloud_coverage.get_daily_coverage()
+
     def run(self):
         """
         Run the simulation.
@@ -159,9 +166,11 @@ class Simulation:
         
         # Register simulation process
         self.env.process(self._simulation_loop())
+        self.env.process(self.inverter.failure_process(self.env)) # Start inverter failure process and manages failures independently
         
         # Run simulation
-        self.env.run()
+        total_minutes = self.duration_days * 24 * 60
+        self.env.run(until=total_minutes)
         
         print("-" * 70)
         print("SIMULATION COMPLETED SUCCESSFULLY!")
@@ -191,6 +200,7 @@ class Simulation:
         daily_grid_export = 0
         daily_curtailed = 0
         current_day = 0
+        inverter_was_operational = True # Track previous state to detect failure transitions
         
         while current_step < total_steps:
             # ========== CALCULATE CURRENT TIME (BEFORE STEP) ==========
@@ -213,6 +223,16 @@ class Simulation:
                 solar_generated = self.inverter.apply_limit(solar_available)
             else:
                 solar_generated = 0  # No solar during inverter failure
+
+            if not self.inverter.is_operational() and inverter_was_operational:
+                duration = self.inverter.current_failure_duration
+                event_msg = f"Inverter FAILURE: will last {duration:.1f} hours"
+                print(f"  EVENT: {event_msg}")
+                self.events_log.append({
+                    'timestamp': current_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    'message': event_msg
+                })
+            inverter_was_operational = self.inverter.is_operational()
             
             # ========== GENERATE LOAD DEMAND ==========
             load_demand = self.load.generate(hour=hour_of_day)
@@ -262,9 +282,6 @@ class Simulation:
             yield self.env.timeout(self.time_step_minutes)
             current_step += 1
             
-            # ========== UPDATE INVERTER (EVERY TIMESTEP) ==========
-            self.inverter.update(time_step_hours)
-            
             # ========== CHECK FOR NEW DAY ==========
             if current_step % steps_per_day == 0 and current_step > 0:
                 
@@ -294,17 +311,6 @@ class Simulation:
                 # Progress indicator
                 if current_day % 5 == 0:
                     print(f"  Day {current_day}/{self.duration_days} completed ({current_day/self.duration_days*100:.1f}%)")
-                
-                # Check for inverter failure
-                self.inverter.check_failure()
-                
-                if self.inverter._is_failing:
-                    event_msg = f"Inverter FAILURE (remaining: {self.inverter._failure_hours_remaining}h)"
-                    print(f"  EVENT: {event_msg}")
-                    self.events_log.append({
-                        'timestamp': current_date.strftime('%Y-%m-%d %H:%M:%S'),
-                        'message': event_msg
-                    })
                 
                 # New cloud data for next day
                 self.current_cloud_coverage = self.cloud_coverage.get_daily_coverage()
@@ -406,7 +412,17 @@ class Simulation:
         final_soc = self.battery.get_soc()
         
         # Count inverter failures
-        inverter_failures = sum(1 for e in self.events_log if 'FAILURE' in e.get('message', ''))
+        inverter_failures = sum(
+            1 for i in range(1, len(self.hourly_data))
+            if not self.hourly_data[i]['inverter_operational']
+            and self.hourly_data[i-1]['inverter_operational']
+        )
+
+        time_step_hours = self.time_step_minutes / 60.0
+        total_downtime = sum(
+            time_step_hours for h in self.hourly_data 
+            if not h['inverter_operational']
+        )
         
         # Calculate unmet load
         time_step_hours = self.time_step_minutes / 60.0
@@ -454,6 +470,7 @@ class Simulation:
             
             'reliability': {
                 'inverter_failures': inverter_failures,
+                'inverter_downtime_hours': total_downtime,
                 'unmet_load_percentage': unmet_percentage,
                 'hours_with_unmet_load': hours_with_unmet
             },

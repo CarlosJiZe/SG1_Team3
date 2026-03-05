@@ -3,25 +3,37 @@ import random
 class Inverter:
     """
     Simulates solar inverter with power clipping and random failures.
+
+    FIX: Refactor version (changes):
+    - Failure is now modeled as a Simpy process
+    - Uses exponential distribution
+    - Models a single failure probability at a specific point in time
+    - We replace the ckech_failure() and update()
+
+
     """
     
-    def __init__(self, max_output_kw, failure_rate=0.005, 
-                 min_failure_duration=4, max_failure_duration=72):
+    def __init__(self, max_output_kw, avr_days_in_failure = 200, 
+                 min_failure_duration=4, max_failure_duration=72, seed=None):
         """
         Initialize inverter.
         
         Args:
             max_output_kw (float): Maximum power output in kW
-            failure_rate (float): Daily failure probability (default 0.005 = 0.5%)
+            avr_days_in_failure (float): Average days between failures.
             min_failure_duration (int): Minimum failure duration in hours
             max_failure_duration (int): Maximum failure duration in hours
         """
         self._max_output_kw = max_output_kw
-        self._failure_rate = failure_rate
+        self._avr_days_in_failure = avr_days_in_failure
         self._min_failure_duration = min_failure_duration
         self._max_failure_duration = max_failure_duration
         self._is_failing = False
-        self._failure_hours_remaining = 0
+        self.total_failures = 0
+
+        self._total_downtime_hours = 0.0
+        self.current_failure_duration = 0.0
+        self._rng = random.Random(seed)
     
     def apply_limit(self, solar_generation):
         """
@@ -40,36 +52,6 @@ class Inverter:
             #If not, output is min(solar_generation, max_output_kw)
             return min(solar_generation, self._max_output_kw)
     
-    def check_failure(self):
-        """
-        Check if a new failure occurs (call once per day).
-        """
-        #if it's already failing, do nothing
-        if self._is_failing:
-            return
-        else:
-            #If not, check probability and create failure if it occurs
-            if random.random() < self._failure_rate:
-                self._is_failing = True
-                self._failure_hours_remaining = random.randint(self._min_failure_duration, self._max_failure_duration)
-    
-    def update(self, hours_passed):
-        """
-        Update failure state.
-        
-        Args:
-            hours_passed (float): Time elapsed in hours
-        """
-
-        #If inverter is currently failing, reduce remaining hours
-        if self._is_failing:
-            self._failure_hours_remaining -= hours_passed
-            # If failure duration has elapsed, reset failure state
-            if self._failure_hours_remaining <= 0:
-                self._is_failing = False
-                self._failure_hours_remaining = 0
- 
-    
     def is_operational(self):
         """Check if inverter is working."""
         #If it is failing, return False
@@ -78,3 +60,52 @@ class Inverter:
         else:
             #If it is not failing, return True
             return True
+        
+    def failure_process(self, env):
+        """
+        Simpy process that models inverter failures over time.
+
+        In this iteration we calculate once the probability at the start (and after each recovery)
+
+        Process:
+        1.- Generate a random time from exponetial distribution
+        2.- Sleep until that time arrives
+        3.- Change state _is_failing to True
+        4.- Generate a random failure duration between min and max
+        5.- Sleep until failure duration is over
+        6.- Change state _is_failing to False
+        7.- Repeat from step 1
+
+        We choose exponential distribution because it is commonly used to model time between failures in reliability engineering.
+
+        Args: 
+            env(simpy.Environment): Simpy simulation environment
+
+        Yields:
+            simpy.events.Timeout: Timeouts for failure occurrence and recovery
+        
+        """
+        while True:
+            #Step 1: Calculate when the next failure will occur
+            avr_hours_in_failure = self._avr_days_in_failure *24 #Convert days to hours
+            hours_until_failure = self._rng.expovariate(1/avr_hours_in_failure)
+
+            #Step 2: Sleep until failure occurs
+            yield env.timeout(hours_until_failure*60) #Convert hours to minutes for env.timeout
+
+            #Step 3: Inverter fails
+            self._is_failing = True
+            self.total_failures += 1
+
+            #Step 4: Calculate failure duration
+            failure_duration = self._rng.uniform(
+                self._min_failure_duration, self._max_failure_duration
+            )
+            self.current_failure_duration = failure_duration
+
+            #Step 5: Sleep until failure is resolved
+            yield env.timeout(failure_duration*60) #Convert hours to minutes for env.timeout
+
+            #Step 6: Inverter recovers
+            self._is_failing = False
+            self._total_downtime_hours += failure_duration

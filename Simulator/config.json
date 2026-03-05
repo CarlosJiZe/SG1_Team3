@@ -19,7 +19,7 @@
   "inverter": {
     "unit_max_output_kw": 4.0,
     "count": 1,
-    "failure_rate": 0.005,
+    "avr_days_in_failure": 200,
     "min_failure_duration_hours": 4,
     "max_failure_duration_hours": 72
   },
