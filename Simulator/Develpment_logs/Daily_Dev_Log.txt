@@ -334,3 +334,48 @@ Notes
 Next Steps
 
 - Begin neighborhood-scale simulation upgrade for Part 2
+
+Date: 2026-03-05
+Team: Team 3
+
+Member: Carlos Jimenez Zepeda
+
+Summary
+Today we kicked off Phase 2 of the GreenGrid project. The main focus was
+refactoring the simulator to support multiple solar panels, inverters, and
+batteries as independent objects, laying the foundation for the multi-household
+simulation and dashboard required in this phase. I also extended the per-component
+logging in hourly_data to capture individual inverter and battery metrics.
+
+Work completed
+
+1) Multi-component architecture refactor (src/)
+- EnergyManagementSystem.py: refactored distribute_energy() to accept a list
+  of batteries instead of a single object. Added _charge_batteries() and
+  _discharge_batteries() helper methods that charge/discharge in sequential
+  order (BMS pattern).
+- Inverter.py: added panels_connected attribute to track how many solar panels
+  feed each inverter independently. No changes to core logic.
+- Simulation.py: full refactor to use lists (self.inverters, self.batteries).
+  Panel distribution algorithm assigns panels_per_inverter = total // count,
+  remainder to the last inverter. Each inverter now runs its own independent
+  SimPy failure_process in parallel.
+
+2) Per-component detail logging
+Added inverter_detail and battery_detail dicts inside the simulation loop.
+These are unpacked into hourly_data using ** so column names scale dynamically
+with the number of components (inverter_1_generated_kw, battery_2_soc, etc.).
+Carlos selected Option A: SoC per battery only, no charge/discharge tracking.
+
+Notes / Issues
+- When inverter 1 failed in the 3/2/2 config, only 1 panel was affected because
+  inverter 2 (with 2 panels) kept running independently. This validated that the
+  parallel failure_process architecture works correctly.
+
+AI assistance
+I used Claude throughout the session for resolving some architecture design doubs, minimum code
+generation (doubs in some sintaxys and structures), and debugging.
+
+Next steps
+- Implement multi-household support with household types and wealth multipliers.
+- Build the data preparation module for neighborhood-level aggregation.

@@ -310,10 +310,7 @@ class DataLogger:
         time_step_minutes = self.config['simulation']['time_step_minutes']
         time_step_hours = time_step_minutes / 60.0
         
-        total_downtime = sum(
-            time_step_hours for h in self.results['hourly_data']
-            if not h['inverter_operational']
-        )
+        total_downtime = self.results['reliability']['inverter_downtime_hours']
         
         answers.append(f"   -> Failures: {failures} ({failures/months:.1f} per month)")
         answers.append(f"   -> Total downtime: {total_downtime:.1f} hours ({total_downtime/months:.1f} hours per month)")

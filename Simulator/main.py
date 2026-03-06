@@ -144,6 +144,8 @@ def main():
         print(f"\n Error during simulation:")
         print(f"   {type(e).__name__}: {e}")
         print("\n   Please check your configuration and try again.")
+        import traceback
+        traceback.print_exc()
         return 1
 
 if __name__ == "__main__":

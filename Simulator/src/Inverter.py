@@ -14,7 +14,7 @@ class Inverter:
     """
     
     def __init__(self, max_output_kw, avr_days_in_failure = 200, 
-                 min_failure_duration=4, max_failure_duration=72):
+                 min_failure_duration=4, max_failure_duration=72, panels_connected=1):
         """
         Initialize inverter.
         
@@ -23,6 +23,7 @@ class Inverter:
             avr_days_in_failure (float): Average days between failures.
             min_failure_duration (int): Minimum failure duration in hours
             max_failure_duration (int): Maximum failure duration in hours
+            panels_connected (int): Number of solar panels connected to this inverter
         """
         self._max_output_kw = max_output_kw
         self._avr_days_in_failure = avr_days_in_failure
@@ -33,6 +34,7 @@ class Inverter:
 
         self._total_downtime_hours = 0.0
         self.current_failure_duration = 0.0
+        self.panels_connected = panels_connected
     
     def apply_limit(self, solar_generation):
         """
@@ -108,4 +110,3 @@ class Inverter:
             #Step 6: Inverter recovers
             self._is_failing = False
             self._total_downtime_hours += failure_duration
-            

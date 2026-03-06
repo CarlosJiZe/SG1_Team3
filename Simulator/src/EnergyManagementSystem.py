@@ -5,6 +5,12 @@ class EnergyManagementSystem:
     This is the "brain" of the system that decides:
     - Where does solar energy go?
     - Where does deficit energy come from?
+
+    Update:
+    - Now we can handle a list of batteries
+    - We add BMS logic for the multiple batteries
+
+
     """
     
     def __init__(self, strategy='LOAD_PRIORITY'):
@@ -19,14 +25,14 @@ class EnergyManagementSystem:
         """
         self._strategy = strategy
 
-    def distribute_energy(self, solar_kw, load_kw, battery, grid, time_step_hours=1.0):
+    def distribute_energy(self, solar_kw, load_kw, batteries, grid, time_step_hours=1.0):
         """
         Distribute energy according to the selected strategy.
         
         Args:
             solar_kw (float): Available solar power in kW
             load_kw (float): House load demand in kW
-            battery (Battery): Battery object
+            batteries (list): List of Battery objects
             grid (Grid): Grid object
             time_step_hours (float): Duration of time step in hours
             
@@ -42,20 +48,67 @@ class EnergyManagementSystem:
             }
         """
         if self._strategy == 'LOAD_PRIORITY':
-            return self._load_priority(solar_kw, load_kw, battery, grid, time_step_hours)
+            return self._load_priority(solar_kw, load_kw, batteries, grid, time_step_hours)
         
         elif self._strategy == 'CHARGE_PRIORITY':
-            return self._charge_priority(solar_kw, load_kw, battery, grid, time_step_hours)
+            return self._charge_priority(solar_kw, load_kw, batteries, grid, time_step_hours)
         
         elif self._strategy == 'PRODUCE_PRIORITY':
-            return self._produce_priority(solar_kw, load_kw, battery, grid, time_step_hours)
+            return self._produce_priority(solar_kw, load_kw, batteries, grid, time_step_hours)
         
         else:
             raise ValueError(f"Unknown strategy: {self._strategy}")
+        
+# ==============================BSD (Battery Management System) METHODS==========================================
+
+    def _charge_batteries(self, batteries, energy_kwh):
+        """
+        Charge multiple batteries in sequence until energy is fully allocated or all batteries are full.
+        
+        Args:
+            batteries (list): List of Battery objects
+            energy_kwh (float): Total energy available for charging in kWh
+
+        Returns:
+            float: Total energy actually consumed from de source
+        """
+        # Loop to go through each battery and try to charge it with the remaining energy
+        total_charged = 0.0
+        remaining = energy_kwh
+        for battery in batteries:
+            if remaining <= 0:
+                break
+            charged = battery.charge(remaining)
+            total_charged += charged
+            remaining -= charged
+        return total_charged
+    
+    def _discharge_batteries(self, batteries, energy_kwh):
+        """
+        Discharge batteries in order until energy demand is met or all batteries are empty.
+        
+        Args:
+            batteries (list): List of Battery objects
+            energy_kwh (float): Total energy requested in kWh
+
+        Returns:
+            Total energy actually provided by batteries in kWh
+
+        """
+        #Loop through each battery and try to discharge it until we meet the requested energy or run out of batteries
+        total_discharged = 0.0
+        remaining = energy_kwh
+        for battery in batteries:
+            if remaining <= 0:
+                break
+            discharged = battery.discharge(remaining)
+            total_discharged += discharged
+            remaining -= discharged
+        return total_discharged
 
 # ==============================LOAD_PRIORITY==========================================
 
-    def _load_priority(self, solar_kw, load_kw, battery, grid, time_step_hours):
+    def _load_priority(self, solar_kw, load_kw, batteries, grid, time_step_hours):
         """
         LOAD_PRIORITY: House first, battery second, grid export last.
     
@@ -72,7 +125,7 @@ class EnergyManagementSystem:
         Args:
             solar_kw (float): Available solar power
             load_kw (float): House demand
-            battery (Battery): Battery object
+            batteries (list): List of Battery objects
             grid (Grid): Grid object
             time_step_hours (float): Duration of time step in hours
         
@@ -97,7 +150,7 @@ class EnergyManagementSystem:
             if excess > 0:
                 # Offer all excess to battery
                 offered_energy = excess * time_step_hours
-                charged_energy = battery.charge(offered_energy)
+                charged_energy = self._charge_batteries(batteries, offered_energy) #Update the charge method
                 
                 # Report consumed power (what battery took from source)
                 solar_to_battery = charged_energy / time_step_hours
@@ -128,7 +181,7 @@ class EnergyManagementSystem:
             # Step 2: Try to cover deficit with battery
             if deficit > 0:
                 requested_energy = deficit * time_step_hours
-                discharged_energy = battery.discharge(requested_energy)
+                discharged_energy = self._discharge_batteries(batteries, requested_energy) #Update the discharge method
                 discharged_power = discharged_energy / time_step_hours
                 battery_to_load = discharged_power
                 
@@ -156,7 +209,7 @@ class EnergyManagementSystem:
         
 # ==============================CHARGE_PRIORITY==========================================
 
-    def _charge_priority(self, solar_kw, load_kw, battery, grid, time_step_hours):
+    def _charge_priority(self, solar_kw, load_kw, batteries, grid, time_step_hours):
         """
         CHARGE_PRIORITY: Battery first, house second, grid export last.
         
@@ -173,7 +226,7 @@ class EnergyManagementSystem:
         Args:
             solar_kw (float): Available solar power
             load_kw (float): House demand
-            battery (Battery): Battery object
+            batteries (list): List of Battery objects
             grid (Grid): Grid object
             time_step_hours (float): Duration of time step in hours
             
@@ -192,7 +245,7 @@ class EnergyManagementSystem:
         if solar_kw >= load_kw:
             # Step 1: Charge battery FIRST with all solar
             offered_energy = solar_kw * time_step_hours
-            charged_energy = battery.charge(offered_energy)
+            charged_energy = self._charge_batteries(batteries, offered_energy) #Update the charge method
             solar_to_battery = charged_energy / time_step_hours
             
             # Calculate remaining solar after charging
@@ -231,7 +284,7 @@ class EnergyManagementSystem:
             # Use battery as backup (same as LOAD_PRIORITY)
             if deficit > 0:
                 requested_energy = deficit * time_step_hours
-                discharged_energy = battery.discharge(requested_energy)
+                discharged_energy = self._discharge_batteries(batteries, requested_energy) #Update the discharge method
                 discharged_power = discharged_energy / time_step_hours
                 battery_to_load = discharged_power
                 deficit -= discharged_power
@@ -255,7 +308,7 @@ class EnergyManagementSystem:
 
 # ==============================PRODUCE_PRIORITY==========================================
 
-    def _produce_priority(self, solar_kw, load_kw, battery, grid, time_step_hours):
+    def _produce_priority(self, solar_kw, load_kw, batteries, grid, time_step_hours):
         """
         PRODUCE_PRIORITY: Grid export first, battery second, house last.
         
@@ -268,7 +321,7 @@ class EnergyManagementSystem:
         Args:
             solar_kw (float): Available solar power
             load_kw (float): House demand
-            battery (Battery): Battery object
+            batteries (list): List of Battery objects
             grid (Grid): Grid object
             time_step_hours (float): Duration of time step in hours
             
@@ -296,7 +349,7 @@ class EnergyManagementSystem:
         # Step 2: Charge battery with remaining solar (if any)
         if solar_remaining > 0:
             offered_energy = solar_remaining * time_step_hours
-            charged_energy = battery.charge(offered_energy)
+            charged_energy = self._charge_batteries(batteries, offered_energy) #Update the charge method
             solar_to_battery = charged_energy / time_step_hours
             
             # Calculate what wasn't used
@@ -318,7 +371,7 @@ class EnergyManagementSystem:
         # Step 4: Cover house deficit from battery
         if deficit > 0:
             requested_energy = deficit * time_step_hours
-            discharged_energy = battery.discharge(requested_energy)
+            discharged_energy = self._discharge_batteries(batteries, requested_energy) #Update the discharge method
             discharged_power = discharged_energy / time_step_hours
             battery_to_load = discharged_power
             deficit -= discharged_power
