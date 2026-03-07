@@ -10,9 +10,13 @@ class DataLogger:
     Exports data in formats ready for:
     - Phase 2: Web-based visualization dashboard
     - Phase 3: Machine learning integration
+
+    Update:
+    - Now it can add a timestamped subfolder depending on the situation
+    - Data prepared for visualization
     """
     
-    def __init__(self, results, config, output_dir='results'):
+    def __init__(self, results, config, output_dir='results',use_subfolder=True):
         """
         Initialize data logger with simulation results.
         
@@ -20,6 +24,7 @@ class DataLogger:
             results (dict): Simulation results from Simulation.run()
             config (dict): Configuration used for the simulation
             output_dir (str): Base directory to save output files
+            use_subfolder (bool): Whether to create a subfolder for this run
         """
         self.results = results
         self.config = config
@@ -33,8 +38,11 @@ class DataLogger:
         days = config['simulation']['duration_days']
         
         # Create descriptive folder name
-        folder_name = f"sim_{self.timestamp}_{strategy}_{season}_{days}d"
-        self.run_folder = os.path.join(output_dir, folder_name)
+        if use_subfolder:
+                folder_name = f"sim_{self.timestamp}_{strategy}_{season}_{days}d"
+                self.run_folder = os.path.join(output_dir, folder_name)
+        else:
+                self.run_folder = output_dir
         
         # Create the folder
         os.makedirs(self.run_folder, exist_ok=True)
@@ -69,7 +77,7 @@ class DataLogger:
         saved_files['answers_txt'] = self.save_answers()
         
         print("\nAll data exported successfully!")
-        print(f"Ready for Phase 2 (Visualization) and Phase 3 (ML)")
+        print(f"Files ready for dashboard visualization and Phase 3 (ML).")
         
         return saved_files
     

@@ -6,3 +6,4 @@ from .Load import Load
 from .Grid import Grid
 from .EnergyManagementSystem import EnergyManagementSystem
 from .Simulation import Simulation
+from .HouseholdSimulation import HouseholdSimulation

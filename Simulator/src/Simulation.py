@@ -9,11 +9,13 @@ Fix: Refactor version (changes):
 - Failure counter now read from inverter object
 
 Update:
-- Suppoert for multiple inverters with their own failure processes
+- Support for multiple inverters with their own failure processes
 - Panels are distributed automatically across inverters
 - Multiple batteries are supported with BMS
 - Inverter logging in hourly data nd events_log
 - Inverter stats in compile_results
+- Add a verbose parameter for neighborhood simulation to control print statements
+- Support for different types of configurations and loads
 """
 
 import simpy
@@ -36,29 +38,35 @@ class Simulation:
     Coordinates all system components and manages energy flow through time.
     """
     
-    def __init__(self, config_path='config.json'):
+    def __init__(self, config_path='config.json', verbose = True):
         """
         Initialize simulation with configuration.
         
         Args:
             config_path (str): Path to configuration JSON file
+            verbose (bool): Whether to print detailed output during simulation
         """
         # Load configuration
-        with open(config_path, 'r') as f:
-            self.config = json.load(f)
+        if isinstance(config_path, dict):
+            self.config = config_path
+        else:
+            with open(config_path, 'r') as f:
+                self.config = json.load(f)
+
+        self.verbose = verbose
         
         # Create SimPy environment
         self.env = simpy.Environment()
         
-        print("\n" + "=" * 70)
-        print("GREENGRID SIMULATION - STARTING")
-        print("=" * 70)
-        print(f"Duration: {self.config['simulation']['duration_days']} days")
-        print(f"Start date: {self.config['simulation']['start_date']}")
-        print(f"Season: {self.config['simulation']['season']}")
-        print(f"Strategy: {self.config['energy_management']['strategy']}")
-        print(f"Time step: {self.config['simulation']['time_step_minutes']} minutes")
-        
+        if self.verbose:
+            print("\n" + "=" * 70)
+            print("GREENGRID SIMULATION - STARTING")
+            print("=" * 70)
+            print(f"Duration: {self.config['simulation']['duration_days']} days")
+            print(f"Start date: {self.config['simulation']['start_date']}")
+            print(f"Season: {self.config['simulation']['season']}")
+            print(f"Strategy: {self.config['energy_management']['strategy']}")
+            print(f"Time step: {self.config['simulation']['time_step_minutes']} minutes")
         # Handle random seed for reproducibility
         config_seed = self.config['simulation'].get('random_seed', None)
         
@@ -66,11 +74,13 @@ class Simulation:
             # Generate random seed based on current time
             import time
             self.actual_seed = int(time.time() * 1000000) % 2147483647  # Max int32
-            print(f"Random seed: {self.actual_seed} (auto-generated)")
-            print(f"  -> Add to config.json to reproduce these exact results")
+            if self.verbose:
+                print(f"Random seed: {self.actual_seed} (auto-generated)")
+                print(f"  -> Add to config.json to reproduce these exact results")
         else:
             self.actual_seed = config_seed
-            print(f"Random seed: {self.actual_seed} (from config - reproducible)")
+            if self.verbose:
+                print(f"Random seed: {self.actual_seed} (from config - reproducible)")
         
         # Set the seed
         random.seed(self.actual_seed)
@@ -93,10 +103,11 @@ class Simulation:
         self.solar_count = solar_count
         self.inverter_count = inverter_count
         
-        print("\nSystem Configuration:")
-        print(f"  Solar:    {solar_count} × {solar_unit} kW = {solar_count * solar_unit} kW peak")
-        print(f"  Inverter: {inverter_count} × {inverter_unit} kW = {inverter_count * inverter_unit} kW max")
-        print(f"  Battery:  {battery_count} × {battery_unit} kWh = {battery_count * battery_unit} kWh")
+        if self.verbose:
+            print("\nSystem Configuration:")
+            print(f"  Solar:    {solar_count} × {solar_unit} kW = {solar_count * solar_unit} kW peak")
+            print(f"  Inverter: {inverter_count} × {inverter_unit} kW = {inverter_count * inverter_unit} kW max")
+            print(f"  Battery:  {battery_count} × {battery_unit} kWh = {battery_count * battery_unit} kWh")
         
         # Initialize components with capacities
         self.batteries = [
@@ -131,16 +142,25 @@ class Simulation:
 
             ))
 
-        print(f"\n Panel distribution across inverters:")
-        for i, inv in enumerate(self.inverters):
-            print(f"    Inverter {i+1}: {inv.panels_connected} panels -> {inv.panels_connected *solar_unit} kW potential output, {inv._max_output_kw} kW max output")
+        if self.verbose:
+            print(f"\n Panel distribution across inverters:")
+            for i, inv in enumerate(self.inverters):
+                print(f"    Inverter {i+1}: {inv.panels_connected} panels -> {inv.panels_connected *solar_unit} kW potential output, {inv._max_output_kw} kW max output")
 
-        self.load = Load(
-            base_load_kw=self.config['load']['base_load_kw'],
-            peak_hours_max_kw=self.config['load']['peak_hours_max_kw'],
-            peak_hours_start=self.config['load']['peak_hours_start'],
-            peak_hours_end=self.config['load']['peak_hours_end']
-        )
+        #Support hardcoded load and new profile-based load configuration based on the PDF provided
+        load_config = self.config['load']
+        if 'household_type' in load_config:
+            self.load = Load(
+                household_type=load_config['household_type'],
+                wealth_level=load_config['wealth_level']
+            )
+        else:
+            self.load = Load(
+                base_load_kw=load_config['base_load_kw'],
+                peak_hours_max_kw=load_config['peak_hours_max_kw'],
+                peak_hours_start=load_config['peak_hours_start'],
+                peak_hours_end=load_config['peak_hours_end']
+            )
         
         self.grid = Grid(
             import_cost_per_kwh=self.config['grid']['import_cost_per_kwh'],
@@ -175,12 +195,14 @@ class Simulation:
         Returns:
             dict: Simulation results including all data and statistics
         """
-        print("-" * 70)
+        if self.verbose:
+            print("-" * 70)
         
         # Calculate total steps
         total_steps = (self.duration_days * 24 * 60) // self.time_step_minutes
-        print(f"Simulating {self.duration_days * 24} hours ({self.duration_days} days)...")
-        print(f"Time step: {self.time_step_minutes} min ({total_steps} total steps)")
+        if self.verbose:
+            print(f"Simulating {self.duration_days * 24} hours ({self.duration_days} days)...")
+            print(f"Time step: {self.time_step_minutes} min ({total_steps} total steps)")
         
         # Register simulation process
         self.env.process(self._simulation_loop())
@@ -193,9 +215,10 @@ class Simulation:
         total_minutes = self.duration_days * 24 * 60
         self.env.run(until=total_minutes)
         
-        print("-" * 70)
-        print("SIMULATION COMPLETED SUCCESSFULLY!")
-        print("=" * 70)
+        if self.verbose:
+            print("-" * 70)
+            print("SIMULATION COMPLETED SUCCESSFULLY!")
+            print("=" * 70)
         
         # Compile results
         return self._compile_results()
@@ -262,7 +285,8 @@ class Simulation:
                 if not inv.is_operational() and inverters_were_operational[i]:
                     duration = inv.current_failure_duration
                     event_msg = f"Inverter {i+1} FAILURE: will last {duration:.1f} hours ({inv.panels_connected} panels affected)"
-                    print(f"  [EVENT] {event_msg}")
+                    if self.verbose:
+                        print(f"  [EVENT] {event_msg}")
                     self.events_log.append({
                         'timestamp': current_date.strftime('%Y-%m-%d %H:%M:%S'),
                         'inverter_id': i+1,
@@ -364,7 +388,8 @@ class Simulation:
                 
                 # Progress indicator
                 if current_day % 5 == 0:
-                    print(f"  Day {current_day}/{self.duration_days} completed ({current_day/self.duration_days*100:.1f}%)")
+                    if self.verbose:
+                        print(f"  Day {current_day}/{self.duration_days} completed ({current_day/self.duration_days*100:.1f}%)")
                 
                 # New cloud data for next day
                 self.current_cloud_coverage = self.cloud_coverage.get_daily_coverage()

@@ -379,3 +379,70 @@ generation (doubs in some sintaxys and structures), and debugging.
 Next steps
 - Implement multi-household support with household types and wealth multipliers.
 - Build the data preparation module for neighborhood-level aggregation.
+
+Date: 2026-03-07
+Team: Team 3
+
+Member: Carlos Jimenez Zepeda
+
+Summary
+Today focused on completing the multi-household simulator and the full data
+preparation pipeline for the dashboard. By end of session, all five dashboard
+JSON files were generated and validated.
+
+Work completed
+
+1) HouseholdSimulation.py — multi-household orchestrator
+- Implemented HouseholdSimulation class supporting 'auto' and 'manual'
+  generation modes from neighborhood_config.json.
+- Per-household seed uses base_seed + index for reproducible but varied results.
+- Output saved to results/neighborhood/sim_{timestamp}_{strategy}_{season}_{days}d/{house_id}/
+
+2) Supporting changes
+- DataLogger.py: added use_subfolder=False so neighborhood runs save CSVs
+  directly into each house directory.
+- main.py: added mode selection (single household vs neighborhood) and removed
+  duplicate simulation call that ran unconditionally.
+- __init__.py: added HouseholdSimulation to package exports.
+
+3) neighborhood_config.json
+- Configured 24-house, 360-day summer simulation covering all household type
+  and wealth level combinations across two scenarios: well_designed and unadvised.
+- Validated neighborhood_summary.json: wealth multipliers, annual kWh ranges,
+  and self-sufficiency values within expected ranges.
+
+4) data_processor.py — bug fixes and validation
+- Bug #1: write_json() crashed when output path had no directory component.
+- Bug #2: aggregate_monthly/quarterly used 30/90-day arithmetic instead of
+  real calendar dates, producing wrong month labels. Refactored to use the
+  'date' field from daily rows.
+- Bug #4 (critical): build_no_solar() used different field names than
+  build_per_house(), which would have caused all no_solar values to return
+  undefined in D3. Unified all keys to match build_per_house() schema.
+- Bug #5: total_co2_avoided_kg was missing from by_wealth groups. Added.
+
+
+5) Dashboard template — local server test
+- Loaded the professor's provided Gapminder-style D3 template in the browser
+  using python3 -m http.server 8080 to confirm the local server setup works
+  correctly and the template renders as expected before Andrés starts building.
+
+Notes / Issues
+- data_processor.py was launched via VS Code Run button, which executes through
+  tempCodeRunnerFile.py and only sends the selected line. Resolved by running
+  directly from terminal.
+
+AI assistance
+Used Claude for code review and debugging throughout the session:
+- Reviewed HouseholdSimulation.py and identified structural bugs (__init__ typo,
+  misplaced methods, wrong config key, missing idx parameter).
+- Audited data_processor.py and identified all five bugs before running the code,
+  explaining root cause and fix for each one.
+- Explained why load-weighted self-sufficiency is more accurate than a simple
+  mean across households of different sizes.
+- Diagnosed the tempCodeRunnerFile.py execution error as a VS Code Run button
+  issue, not a code problem.
+- Reviewed the five output JSONs and confirmed physical consistency of values.
+
+Next steps
+- Andrés to design in the dashboard based on the PDF.

@@ -32,7 +32,7 @@
   "grid": {
     "import_cost_per_kwh": 0.0075,
     "export_revenue_per_kwh": 0.009,
-    "export_limit_kw": 2.0
+    "export_limit_kw": 20.0
   },
   "energy_management": {
     "strategy": "LOAD_PRIORITY"
