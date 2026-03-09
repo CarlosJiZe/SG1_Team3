@@ -3,23 +3,23 @@
     "duration_days": 30,
     "time_step_minutes": 60,
     "start_date": "2024-06-01",
-    "season": "summer",
+    "season": "winter",
     "random_seed": 519425893
   },
   "battery": {
     "unit_capacity_kwh": 13.5,
-    "count": 1,
+    "count": 2,
     "efficiency": 0.9,
     "min_soc": 0.05
   },
   "solar": {
     "unit_peak_power_kw": 5.0,
-    "count": 1
+    "count": 3
   },
   "inverter": {
     "unit_max_output_kw": 4.0,
-    "count": 1,
-    "failure_rate": 0.005,
+    "count": 2,
+    "avr_days_in_failure": 200,
     "min_failure_duration_hours": 4,
     "max_failure_duration_hours": 72
   },

@@ -10,9 +10,13 @@ class DataLogger:
     Exports data in formats ready for:
     - Phase 2: Web-based visualization dashboard
     - Phase 3: Machine learning integration
+
+    Update:
+    - Now it can add a timestamped subfolder depending on the situation
+    - Data prepared for visualization
     """
     
-    def __init__(self, results, config, output_dir='results'):
+    def __init__(self, results, config, output_dir='results',use_subfolder=True):
         """
         Initialize data logger with simulation results.
         
@@ -20,6 +24,7 @@ class DataLogger:
             results (dict): Simulation results from Simulation.run()
             config (dict): Configuration used for the simulation
             output_dir (str): Base directory to save output files
+            use_subfolder (bool): Whether to create a subfolder for this run
         """
         self.results = results
         self.config = config
@@ -33,8 +38,11 @@ class DataLogger:
         days = config['simulation']['duration_days']
         
         # Create descriptive folder name
-        folder_name = f"sim_{self.timestamp}_{strategy}_{season}_{days}d"
-        self.run_folder = os.path.join(output_dir, folder_name)
+        if use_subfolder:
+                folder_name = f"sim_{self.timestamp}_{strategy}_{season}_{days}d"
+                self.run_folder = os.path.join(output_dir, folder_name)
+        else:
+                self.run_folder = output_dir
         
         # Create the folder
         os.makedirs(self.run_folder, exist_ok=True)
@@ -69,7 +77,7 @@ class DataLogger:
         saved_files['answers_txt'] = self.save_answers()
         
         print("\nAll data exported successfully!")
-        print(f"Ready for Phase 2 (Visualization) and Phase 3 (ML)")
+        print(f"Files ready for dashboard visualization and Phase 3 (ML).")
         
         return saved_files
     
@@ -82,18 +90,18 @@ class DataLogger:
         """
         filename = os.path.join(self.run_folder, "hourly_data.csv")
         
-        if not self.results['data']['hourly_data']:
+        if not self.results['hourly_data']:
             print("  Warning: No hourly data")
             return None
         
-        fieldnames = self.results['data']['hourly_data'][0].keys()
+        fieldnames = self.results['hourly_data'][0].keys()
         
         with open(filename, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(self.results['data']['hourly_data'])
+            writer.writerows(self.results['hourly_data'])
         
-        rows = len(self.results['data']['hourly_data'])
+        rows = len(self.results['hourly_data'])
         print(f"  Hourly data: {rows} rows")
         return filename
     
@@ -106,18 +114,18 @@ class DataLogger:
         """
         filename = os.path.join(self.run_folder, "daily_summaries.csv")
         
-        if not self.results['data']['daily_summaries']:
+        if not self.results['daily_summaries']:
             print("  Warning: No daily summaries")
             return None
         
-        fieldnames = self.results['data']['daily_summaries'][0].keys()
+        fieldnames = self.results['daily_summaries'][0].keys()
         
         with open(filename, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(self.results['data']['daily_summaries'])
+            writer.writerows(self.results['daily_summaries'])
         
-        rows = len(self.results['data']['daily_summaries'])
+        rows = len(self.results['daily_summaries'])
         print(f"  Daily summaries: {rows} days")
         return filename
     
@@ -130,21 +138,21 @@ class DataLogger:
         """
         filename = os.path.join(self.run_folder, "events_log.csv")
         
-        if not self.results['data']['events_log']:
+        if not self.results['events_log']:
             with open(filename, 'w', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=['timestamp', 'message'])
                 writer.writeheader()
             print(f"  Events log: 0 events")
             return filename
         
-        fieldnames = self.results['data']['events_log'][0].keys()
+        fieldnames = self.results['events_log'][0].keys()
         
         with open(filename, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(self.results['data']['events_log'])
+            writer.writerows(self.results['events_log'])
         
-        rows = len(self.results['data']['events_log'])
+        rows = len(self.results['events_log'])
         print(f"  Events log: {rows} events")
         return filename
     
@@ -216,15 +224,15 @@ class DataLogger:
         answers.append("ANSWERS TO PROJECT QUESTIONS")
         answers.append("=" * 70)
         
-        duration_days = self.results['summary']['duration_days']
+        duration_days = self.config['simulation']['duration_days']
         months = duration_days / 30.0
         
         # Show the actual seed used
         actual_seed = self.config['simulation'].get('actual_seed_used', 'unknown')
         
         answers.append(f"Simulation: {self.config['simulation']['start_date']} | "
-                      f"{self.results['summary']['season']} | "
-                      f"{self.results['summary']['strategy']}")
+                      f"{self.config['simulation']['season']} | "
+                      f"{self.config['energy_management']['strategy']}")
         answers.append(f"Duration: {duration_days} days ({months:.1f} months)")
         answers.append(f"Random Seed Used: {actual_seed}")
         answers.append("")
@@ -252,17 +260,17 @@ class DataLogger:
         
         # Count using config-based thresholds
         full_count = sum(
-            1 for h in self.results['data']['hourly_data'] 
+            1 for h in self.results['hourly_data'] 
             if h['battery_soc'] >= (max_soc_threshold - 0.1)
         )
         empty_count = sum(
-            1 for h in self.results['data']['hourly_data'] 
+            1 for h in self.results['hourly_data'] 
             if h['battery_soc'] <= (min_soc_threshold + 0.1)
         )
 
         # Calculate hours based on time step
         time_step_hours = self.config['simulation']['time_step_minutes'] / 60.0
-        total_steps = len(self.results['data']['hourly_data'])
+        total_steps = len(self.results['hourly_data'])
 
         full_hours = full_count * time_step_hours
         empty_hours = empty_count * time_step_hours
@@ -310,10 +318,7 @@ class DataLogger:
         time_step_minutes = self.config['simulation']['time_step_minutes']
         time_step_hours = time_step_minutes / 60.0
         
-        total_downtime = sum(
-            time_step_hours for h in self.results['data']['hourly_data']
-            if not h['inverter_operational']
-        )
+        total_downtime = self.results['reliability']['inverter_downtime_hours']
         
         answers.append(f"   -> Failures: {failures} ({failures/months:.1f} per month)")
         answers.append(f"   -> Total downtime: {total_downtime:.1f} hours ({total_downtime/months:.1f} hours per month)")
@@ -321,13 +326,13 @@ class DataLogger:
         
         # Question 7
         answers.append("7. What is the average cloud coverage during the month?")
-        avg_cloud = sum(h['cloud_coverage'] for h in self.results['data']['hourly_data']) / len(self.results['data']['hourly_data'])
+        avg_cloud = sum(h['cloud_coverage'] for h in self.results['hourly_data']) / len(self.results['hourly_data'])
         answers.append(f"   -> {avg_cloud:.3f} ({avg_cloud*100:.1f}%)")
         answers.append("")
         
         # Question 8
         answers.append("8. What is the peak load demand observed during the month?")
-        peak_load = max(h['load_demand_kw'] for h in self.results['data']['hourly_data'])
+        peak_load = max(h['load_demand_kw'] for h in self.results['hourly_data'])
         answers.append(f"   -> {peak_load:.2f} kW")
         answers.append("")
         
@@ -348,7 +353,7 @@ class DataLogger:
         
         # Question 11
         answers.append("11. How does the energy management strategy affect overall system performance?")
-        answers.append(f"   -> Current strategy: {self.results['summary']['strategy']}")
+        answers.append(f"   -> Current strategy: {self.config['energy_management']['strategy']}")
         answers.append(f"   -> Self-sufficiency: {self.results['summary']['self_sufficiency_percent']:.2f}%")
         answers.append(f"   -> Battery avg SoC: {self.results['battery']['average_soc_percent']:.2f}%")
         curtailed_total = self.results['summary']['total_curtailed_kwh']
@@ -369,7 +374,7 @@ class DataLogger:
         
         # Question 13
         answers.append("13. What is the impact of different cloud coverage levels on solar generation?")
-        answers.append(f"   -> Season: {self.results['summary']['season']}")
+        answers.append(f"   -> Season: {self.config['simulation']['season']}")
         answers.append(f"   -> Avg cloud coverage: {avg_cloud:.2f}")
         answers.append(f"   -> Solar generated: {solar_total:.2f} kWh total ({solar_per_month:.2f} kWh/month)")
         answers.append("   -> Note: Run simulations with different seasons for comparison")
@@ -377,7 +382,7 @@ class DataLogger:
         
         # Question 14
         answers.append("14. How does the system perform under different seasonal conditions?")
-        answers.append(f"   -> Current season: {self.results['summary']['season']}")
+        answers.append(f"   -> Current season: {self.config['simulation']['season']}")
         answers.append(f"   -> Solar generation: {solar_total:.2f} kWh total ({solar_per_month:.2f} kWh/month)")
         answers.append("   -> Note: Run simulations with different seasons for comparison")
         answers.append("")

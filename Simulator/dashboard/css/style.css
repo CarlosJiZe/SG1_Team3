@@ -1,0 +1,35 @@
+#chart-area svg {
+	margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+#logo {
+	height:50px;
+}
+
+.navbar-brand {
+	height: 60px;
+	padding: 5px 0px;
+}
+
+/* Slider container - spacing for handle */
+#slider-div {
+	padding: 0 10px;
+}
+
+/* Slider dark theme */
+.ui-slider {
+    background: #333 !important;
+    border: 1px solid #555 !important;
+}
+
+.ui-slider .ui-slider-handle {
+    background: #333 !important;
+    border: 1px solid #357abd !important;
+    cursor: pointer !important;
+}
+
+.ui-slider .ui-slider-range {
+    background: #555 !important;
+}

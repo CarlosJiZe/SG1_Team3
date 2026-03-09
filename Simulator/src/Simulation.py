@@ -2,6 +2,20 @@
 Simulation Module - Main orchestrator for GreenGrid digital twin
 
 This module coordinates all components and runs the discrete-event simulation.
+
+Fix: Refactor version (changes):
+- Inverter failure is now a separate Simpy process
+- Replaces check_failure() and update() calls
+- Failure counter now read from inverter object
+
+Update:
+- Support for multiple inverters with their own failure processes
+- Panels are distributed automatically across inverters
+- Multiple batteries are supported with BMS
+- Inverter logging in hourly data nd events_log
+- Inverter stats in compile_results
+- Add a verbose parameter for neighborhood simulation to control print statements
+- Support for different types of configurations and loads
 """
 
 import simpy
@@ -24,29 +38,35 @@ class Simulation:
     Coordinates all system components and manages energy flow through time.
     """
     
-    def __init__(self, config_path='config.json'):
+    def __init__(self, config_path='config.json', verbose = True):
         """
         Initialize simulation with configuration.
         
         Args:
             config_path (str): Path to configuration JSON file
+            verbose (bool): Whether to print detailed output during simulation
         """
         # Load configuration
-        with open(config_path, 'r') as f:
-            self.config = json.load(f)
+        if isinstance(config_path, dict):
+            self.config = config_path
+        else:
+            with open(config_path, 'r') as f:
+                self.config = json.load(f)
+
+        self.verbose = verbose
         
         # Create SimPy environment
         self.env = simpy.Environment()
         
-        print("\n" + "=" * 70)
-        print("GREENGRID SIMULATION - STARTING")
-        print("=" * 70)
-        print(f"Duration: {self.config['simulation']['duration_days']} days")
-        print(f"Start date: {self.config['simulation']['start_date']}")
-        print(f"Season: {self.config['simulation']['season']}")
-        print(f"Strategy: {self.config['energy_management']['strategy']}")
-        print(f"Time step: {self.config['simulation']['time_step_minutes']} minutes")
-        
+        if self.verbose:
+            print("\n" + "=" * 70)
+            print("GREENGRID SIMULATION - STARTING")
+            print("=" * 70)
+            print(f"Duration: {self.config['simulation']['duration_days']} days")
+            print(f"Start date: {self.config['simulation']['start_date']}")
+            print(f"Season: {self.config['simulation']['season']}")
+            print(f"Strategy: {self.config['energy_management']['strategy']}")
+            print(f"Time step: {self.config['simulation']['time_step_minutes']} minutes")
         # Handle random seed for reproducibility
         config_seed = self.config['simulation'].get('random_seed', None)
         
@@ -54,11 +74,13 @@ class Simulation:
             # Generate random seed based on current time
             import time
             self.actual_seed = int(time.time() * 1000000) % 2147483647  # Max int32
-            print(f"Random seed: {self.actual_seed} (auto-generated)")
-            print(f"  -> Add to config.json to reproduce these exact results")
+            if self.verbose:
+                print(f"Random seed: {self.actual_seed} (auto-generated)")
+                print(f"  -> Add to config.json to reproduce these exact results")
         else:
             self.actual_seed = config_seed
-            print(f"Random seed: {self.actual_seed} (from config - reproducible)")
+            if self.verbose:
+                print(f"Random seed: {self.actual_seed} (from config - reproducible)")
         
         # Set the seed
         random.seed(self.actual_seed)
@@ -66,57 +88,79 @@ class Simulation:
         # Store the actual seed used in config for logging
         self.config['simulation']['actual_seed_used'] = self.actual_seed
         
-        # Calculate component counts and total capacities
+        # Read unit values not totals
         battery_count = self.config['battery'].get('count', 1)
         battery_unit = self.config['battery']['unit_capacity_kwh']
-        battery_total = battery_count * battery_unit
         
         solar_count = self.config['solar'].get('count', 1)
         solar_unit = self.config['solar']['unit_peak_power_kw']
-        solar_total = solar_count * solar_unit
         
         inverter_count = self.config['inverter'].get('count', 1)
         inverter_unit = self.config['inverter']['unit_max_output_kw']
-        inverter_total = inverter_count * inverter_unit
-        
-        print("\nSystem Configuration:")
-        print(f"  Battery: {battery_total} kWh")
-        print(f"  Solar: {solar_total} kW peak")
-        print(f"  Inverter: {inverter_total} K kW max output")
-        
+
         # Store counts for reporting
         self.battery_count = battery_count
         self.solar_count = solar_count
         self.inverter_count = inverter_count
         
-        # Initialize components with total capacities
-        self.battery = Battery(
-            capacity_kwh=battery_total,
-            efficiency=self.config['battery']['efficiency'],
-            min_soc=self.config['battery']['min_soc']
-        )
+        if self.verbose:
+            print("\nSystem Configuration:")
+            print(f"  Solar:    {solar_count} × {solar_unit} kW = {solar_count * solar_unit} kW peak")
+            print(f"  Inverter: {inverter_count} × {inverter_unit} kW = {inverter_count * inverter_unit} kW max")
+            print(f"  Battery:  {battery_count} × {battery_unit} kWh = {battery_count * battery_unit} kWh")
+        
+        # Initialize components with capacities
+        self.batteries = [
+            Battery(
+                capacity_kwh = battery_unit,
+                efficiency=self.config['battery']['efficiency'],
+                min_soc = self.config['battery']['min_soc']
+            )
+            for _ in range(battery_count)
+        ]
         
         self.solar_panel = SolarPanel(
-            peak_power_kw=solar_total
+            peak_power_kw=solar_unit
         )
         
         self.cloud_coverage = CloudCoverage(
             season=self.config['simulation']['season']
         )
         
-        self.inverter = Inverter(
-            max_output_kw=inverter_total,
-            failure_rate=self.config['inverter']['failure_rate'],
-            min_failure_duration=self.config['inverter']['min_failure_duration_hours'],
-            max_failure_duration=self.config['inverter']['max_failure_duration_hours']
-        )
-        
-        self.load = Load(
-            base_load_kw=self.config['load']['base_load_kw'],
-            peak_hours_max_kw=self.config['load']['peak_hours_max_kw'],
-            peak_hours_start=self.config['load']['peak_hours_start'],
-            peak_hours_end=self.config['load']['peak_hours_end']
-        )
+        panels_per_inverter = solar_count // inverter_count #Distribute panels across inverters
+        remainder = solar_count % inverter_count #Extra panels goes to the last inverter
+
+        self.inverters = []
+        for i in range(inverter_count):
+            panels = panels_per_inverter + (remainder if i == inverter_count - 1 else 0) #Add remainder to the last inverter
+            self.inverters.append(Inverter(
+                max_output_kw = inverter_unit,
+                avr_days_in_failure=self.config['inverter']['avr_days_in_failure'],
+                min_failure_duration=self.config['inverter']['min_failure_duration_hours'],
+                max_failure_duration=self.config['inverter']['max_failure_duration_hours'],
+                panels_connected = panels
+
+            ))
+
+        if self.verbose:
+            print(f"\n Panel distribution across inverters:")
+            for i, inv in enumerate(self.inverters):
+                print(f"    Inverter {i+1}: {inv.panels_connected} panels -> {inv.panels_connected *solar_unit} kW potential output, {inv._max_output_kw} kW max output")
+
+        #Support hardcoded load and new profile-based load configuration based on the PDF provided
+        load_config = self.config['load']
+        if 'household_type' in load_config:
+            self.load = Load(
+                household_type=load_config['household_type'],
+                wealth_level=load_config['wealth_level']
+            )
+        else:
+            self.load = Load(
+                base_load_kw=load_config['base_load_kw'],
+                peak_hours_max_kw=load_config['peak_hours_max_kw'],
+                peak_hours_start=load_config['peak_hours_start'],
+                peak_hours_end=load_config['peak_hours_end']
+            )
         
         self.grid = Grid(
             import_cost_per_kwh=self.config['grid']['import_cost_per_kwh'],
@@ -143,6 +187,7 @@ class Simulation:
         
         # Daily cloud coverage (will be updated each day)
         self.current_cloud_coverage = self.cloud_coverage.get_daily_coverage()
+
     def run(self):
         """
         Run the simulation.
@@ -150,22 +195,30 @@ class Simulation:
         Returns:
             dict: Simulation results including all data and statistics
         """
-        print("-" * 70)
+        if self.verbose:
+            print("-" * 70)
         
         # Calculate total steps
         total_steps = (self.duration_days * 24 * 60) // self.time_step_minutes
-        print(f"Simulating {self.duration_days * 24} hours ({self.duration_days} days)...")
-        print(f"Time step: {self.time_step_minutes} min ({total_steps} total steps)")
+        if self.verbose:
+            print(f"Simulating {self.duration_days * 24} hours ({self.duration_days} days)...")
+            print(f"Time step: {self.time_step_minutes} min ({total_steps} total steps)")
         
         # Register simulation process
         self.env.process(self._simulation_loop())
+
+        # Start inverter failure processes for each inverter
+        for i, inv in enumerate(self.inverters):
+            self.env.process(inv.failure_process(self.env))
         
         # Run simulation
-        self.env.run()
+        total_minutes = self.duration_days * 24 * 60
+        self.env.run(until=total_minutes)
         
-        print("-" * 70)
-        print("SIMULATION COMPLETED SUCCESSFULLY!")
-        print("=" * 70)
+        if self.verbose:
+            print("-" * 70)
+            print("SIMULATION COMPLETED SUCCESSFULLY!")
+            print("=" * 70)
         
         # Compile results
         return self._compile_results()
@@ -191,6 +244,9 @@ class Simulation:
         daily_grid_export = 0
         daily_curtailed = 0
         current_day = 0
+
+        #Track previous states per inverter
+        inverters_were_operational = [True]*len(self.inverters)
         
         while current_step < total_steps:
             # ========== CALCULATE CURRENT TIME (BEFORE STEP) ==========
@@ -203,17 +259,43 @@ class Simulation:
             )
             
             # ========== GENERATE SOLAR POWER ==========
-            solar_available = self.solar_panel.generate(
-                hour_of_day,
-                self.current_cloud_coverage
-            )
+            solar_available = 0.0
+            solar_generated = 0.0
+            inverter_detail = {}
+
+            #Run through each inverter to calculate available and generated solar power, considering failures
+            for i, inv in enumerate(self.inverters):
+                inv_available = self.solar_panel.generate_for_panels(
+                    n_panels = inv.panels_connected,
+                    hour_of_day=hour_of_day,
+                    cloud_coverage=self.current_cloud_coverage
+                )
+                inv_generated = inv.apply_limit(inv_available)
             
-            # Apply inverter limits and check for failures
-            if self.inverter.is_operational():
-                solar_generated = self.inverter.apply_limit(solar_available)
-            else:
-                solar_generated = 0  # No solar during inverter failure
-            
+                solar_available += inv_available
+                solar_generated += inv_generated
+
+                #Details per inverter for logging
+                inverter_detail[f'inverter_{i+1}_available_kw']= round(inv_available,6)
+                inverter_detail[f'inverter_{i+1}_generated_kw']= round(inv_generated,6)
+                inverter_detail[f'inverter_{i+1}_clipped_kw']= round(inv_available - inv_generated,6)
+                inverter_detail[f'inverter_{i+1}_panels']=inv.panels_connected
+
+                #Detect inverter failure events and log them
+                if not inv.is_operational() and inverters_were_operational[i]:
+                    duration = inv.current_failure_duration
+                    event_msg = f"Inverter {i+1} FAILURE: will last {duration:.1f} hours ({inv.panels_connected} panels affected)"
+                    if self.verbose:
+                        print(f"  [EVENT] {event_msg}")
+                    self.events_log.append({
+                        'timestamp': current_date.strftime('%Y-%m-%d %H:%M:%S'),
+                        'inverter_id': i+1,
+                        'message': event_msg
+                    })
+
+                inverters_were_operational[i] = inv.is_operational()
+
+
             # ========== GENERATE LOAD DEMAND ==========
             load_demand = self.load.generate(hour=hour_of_day)
             
@@ -221,12 +303,25 @@ class Simulation:
             flows = self.ems.distribute_energy(
                 solar_kw=solar_generated,
                 load_kw=load_demand,
-                battery=self.battery,
+                batteries=self.batteries, #Update to support multiple batteries
                 grid=self.grid,
                 time_step_hours=time_step_hours
             )
             
             # ========== LOG HOURLY DATA ==========
+            # Baterry_soc logged as average across al bateries
+            avg_battery_soc = sum(b.get_soc() for b in self.batteries)/len(self.batteries)
+
+            inverter_status = {
+                f'inverter_{i+1}': inv.is_operational()
+                for i, inv in enumerate(self.inverters)
+            }
+
+            battery_detail = {
+                f'battery_{i+1}_soc': round(b.get_soc(),6)
+                for i, b in enumerate(self.batteries)
+            }
+
             self.hourly_data.append({
                 'timestamp': current_date.strftime('%Y-%m-%d %H:%M:%S'),
                 'step': current_step,
@@ -235,7 +330,7 @@ class Simulation:
                 'solar_available_kw': solar_available,
                 'load_demand_kw': load_demand,
                 'cloud_coverage': self.current_cloud_coverage,
-                'battery_soc': self.battery.get_soc(),
+                'battery_soc': avg_battery_soc,
                 'solar_to_load': flows['solar_to_load'],
                 'solar_to_battery': flows['solar_to_battery'],
                 'solar_to_grid': flows['solar_to_grid'],
@@ -243,7 +338,10 @@ class Simulation:
                 'grid_to_load': flows['grid_to_load'],
                 'unmet_load': flows['unmet_load'],
                 'curtailed': flows['curtailed'],
-                'inverter_operational': self.inverter.is_operational()
+                **inverter_detail, #Unpack individual inverter details for granular analysis
+                **inverter_status, #Unpack the information about each inverter's operational status
+                **battery_detail #Unpack the information about each battery's state of charge
+
             })
             
             # ========== UPDATE DAILY TOTALS ==========
@@ -261,9 +359,6 @@ class Simulation:
             # ========== ADVANCE TIME ==========
             yield self.env.timeout(self.time_step_minutes)
             current_step += 1
-            
-            # ========== UPDATE INVERTER (EVERY TIMESTEP) ==========
-            self.inverter.update(time_step_hours)
             
             # ========== CHECK FOR NEW DAY ==========
             if current_step % steps_per_day == 0 and current_step > 0:
@@ -293,18 +388,8 @@ class Simulation:
                 
                 # Progress indicator
                 if current_day % 5 == 0:
-                    print(f"  Day {current_day}/{self.duration_days} completed ({current_day/self.duration_days*100:.1f}%)")
-                
-                # Check for inverter failure
-                self.inverter.check_failure()
-                
-                if self.inverter._is_failing:
-                    event_msg = f"Inverter FAILURE (remaining: {self.inverter._failure_hours_remaining}h)"
-                    print(f"  EVENT: {event_msg}")
-                    self.events_log.append({
-                        'timestamp': current_date.strftime('%Y-%m-%d %H:%M:%S'),
-                        'message': event_msg
-                    })
+                    if self.verbose:
+                        print(f"  Day {current_day}/{self.duration_days} completed ({current_day/self.duration_days*100:.1f}%)")
                 
                 # New cloud data for next day
                 self.current_cloud_coverage = self.cloud_coverage.get_daily_coverage()
@@ -373,6 +458,13 @@ class Simulation:
     # ================================================================
     def _log_daily_summary(self, day, solar, load, grid_import, grid_export, 
                           curtailed, self_sufficiency):
+        batteries_soc = {
+            f'battery_{i+1}_soc': b.get_soc()
+            for i,b in enumerate(self.batteries)
+        }
+
+        avg_soc = sum(b.get_soc() for b in self.batteries)/ len(self.batteries)
+
         self.daily_summaries.append({
             'day': day + 1,
             'solar_generated_kwh': solar,
@@ -380,8 +472,9 @@ class Simulation:
             'grid_imported_kwh': grid_import,
             'grid_exported_kwh': grid_export,
             'curtailed_kwh': curtailed,
-            'battery_soc_end': self.battery.get_soc(),
-            'self_sufficiency_percent': self_sufficiency
+            'battery_soc_end': avg_soc,
+            'self_sufficiency_percent': self_sufficiency,
+            **batteries_soc #Unpack individual battery SoC for detailed analysis
         })
 
     def _compile_results(self):
@@ -391,22 +484,93 @@ class Simulation:
         Returns:
             dict: Complete results dictionary
         """
+        # Calculate totals
         total_solar = sum(d['solar_generated_kwh'] for d in self.daily_summaries)
         total_load = sum(d['load_consumed_kwh'] for d in self.daily_summaries)
         total_import = sum(d['grid_imported_kwh'] for d in self.daily_summaries)
         total_export = sum(d['grid_exported_kwh'] for d in self.daily_summaries)
         total_curtailed = sum(d['curtailed_kwh'] for d in self.daily_summaries)
+        
+        # Calculate self-sufficiency
+        self_sufficiency = ((total_load - total_import) / total_load * 100) if total_load > 0 else 0
+        
+        # Calculate average battery SoC
+        avg_soc = sum(h['battery_soc'] for h in self.hourly_data) / len(self.hourly_data) if self.hourly_data else 0
+        final_soc = sum(b.get_soc() for b in self.batteries)/len(self.batteries)
+        
+        # Count inverters failures
+        per_inverter_stats = []
+        total_failures = 0
+        total_downtime = 0.0
+
+        for i, inv in enumerate(self.inverters):
+            per_inverter_stats.append({
+                'id': i+1,
+                'panels_connected': inv.panels_connected,
+                'failures': inv.total_failures,
+                'downtime_hours': inv._total_downtime_hours
+            })
+
+            total_failures += inv.total_failures
+            total_downtime += inv._total_downtime_hours
+        
+        # Calculate unmet load
+        time_step_hours = self.time_step_minutes / 60.0
+        total_unmet = sum(h['unmet_load'] for h in self.hourly_data) * time_step_hours
+        unmet_percentage = (total_unmet / total_load * 100) if total_load > 0 else 0
+        
+        # Calculate hours with unmet load
+        hours_with_unmet = sum(time_step_hours for h in self.hourly_data if h['unmet_load'] > 0)
+        
+        # Get financial data from grid
+        total_import_cost = self.grid.get_total_cost()
+        total_export_revenue = self.grid.get_total_revenue()
+        net_cost = total_import_cost - total_export_revenue
+        
+        # System configuration summary
+        battery_unit = self.config['battery']['unit_capacity_kwh']
+        solar_unit = self.config['solar']['unit_peak_power_kw']
+        inverter_unit = self.config['inverter']['unit_max_output_kw']
 
         return {
             'config_used': self.config,
             'hourly_data': self.hourly_data,
             'daily_summaries': self.daily_summaries,
             'events_log': self.events_log,
-            'totals': {
-                'solar_kwh': total_solar,
-                'load_kwh': total_load,
-                'grid_import_kwh': total_import,
-                'grid_export_kwh': total_export,
-                'curtailed_kwh': total_curtailed
+            
+            'summary': {
+                'total_solar_generated_kwh': total_solar,
+                'total_load_consumed_kwh': total_load,
+                'total_grid_imported_kwh': total_import,
+                'total_grid_exported_kwh': total_export,
+                'total_curtailed_kwh': total_curtailed,
+                'self_sufficiency_percent': self_sufficiency
+            },
+            
+            'financial': {
+                'total_import_cost': total_import_cost,
+                'total_export_revenue': total_export_revenue,
+                'net_cost': net_cost
+            },
+            
+            'battery': {
+                'average_soc_percent': avg_soc,
+                'final_soc_percent': final_soc
+            },
+            
+            'reliability': {
+                'inverter_failures': total_failures,
+                'inverter_downtime_hours': total_downtime,
+                'unmet_load_percentage': unmet_percentage,
+                'hours_with_unmet_load': hours_with_unmet
+            },
+            
+            'system': {
+                'battery_capacity_kwh': battery_unit * self.battery_count,
+                'battery_count': self.battery_count,
+                'solar_peak_kw': solar_unit * self.solar_count,
+                'solar_count': self.solar_count,
+                'inverter_max_kw': inverter_unit *self.inverter_count,
+                'inverter_count': self.inverter_count
             }
         }

@@ -48,8 +48,8 @@
     "count": 1,
     "_count_help": "Number of inverter units. Total max output = unit_max_output_kw × count",
     
-    "failure_rate": 0.005,
-    "_failure_rate_help": "Daily failure probability as decimal (0.005 = 0.5% per day, 0.01 = 1%)",
+    "avr_days_in_failure": 200,
+    "_avr_days_in_failure_help": "Average days between inverter failures (200 = ~0.5% daily chance). Uses exponential distribution.",
     
     "min_failure_duration_hours": 4,
     "_min_failure_duration_hours_help": "Minimum hours inverter stays failed when failure occurs",

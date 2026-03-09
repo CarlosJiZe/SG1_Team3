@@ -1,0 +1,130 @@
+{
+  "_comment": "GreenGrid Neighborhood Simulation — Configuration Template",
+  "_instructions": {
+    "_1": "SIMULATION: Same parameters as single-household config. duration_days: 360 recommended for annual data.",
+    "_2": "DEFAULTS: solar_defaults, inverter_defaults, battery_defaults define the unit specs shared across all households. Override per-household in 'overrides' if needed.",
+    "_3": "HOUSEHOLD TEMPLATES: Define solar/inverter/battery counts per type+wealth combination. These are the defaults assigned automatically — adjust counts after running tests if a combination is over/under sized.",
+    "_4": "NEIGHBORHOOD MODES:",
+    "_4a": "  'auto'   — Set total_households + probability distributions for type and wealth. The system randomly assigns type and wealth to each household following those probabilities. Good for realistic neighborhood simulation.",
+    "_4b": "  'manual' — Set exact counts per type+wealth combination. The system generates household ids automatically. Good for controlled experiments.",
+    "_5": "OVERRIDES: Customize specific households by id (e.g. 'house_03'). Only specify fields to change — everything else stays from the template. Supported fields: solar_count, inverter_count, battery_count, unit_peak_power_kw, unit_max_output_kw, unit_capacity_kwh.",
+    "_6": "IDs are auto-assigned as house_01, house_02, etc. in the order they are generated."
+  },
+
+  "simulation": {
+    "duration_days": 360,
+    "_duration_days_help": "360 = full year. Use 30 for quick tests, 90 for seasonal analysis.",
+    "time_step_minutes": 60,
+    "_time_step_minutes_help": "60 = hourly (recommended for neighborhood). Use 15 for more granular data.",
+    "start_date": "2024-01-01",
+    "_start_date_help": "Start date of simulation (YYYY-MM-DD).",
+    "season": "summer",
+    "_season_help": "Cloud coverage patterns: spring, summer, fall, winter.",
+    "random_seed": null,
+    "_random_seed_help": "Integer for reproducible results. null = different run each time."
+  },
+
+  "grid": {
+    "import_cost_per_kwh": 0.0075,
+    "_import_cost_help": "Cost to import energy in $/kWh (0.0075 = 0.75 cents).",
+    "export_revenue_per_kwh": 0.009,
+    "_export_revenue_help": "Revenue from exporting energy in $/kWh (0.009 = 0.9 cents).",
+    "export_limit_kw": 20.0,
+    "_export_limit_help": "Maximum power each household can export to grid in kW."
+  },
+
+  "energy_management": {
+    "strategy": "LOAD_PRIORITY",
+    "_strategy_help": "Applied to all households. Options: LOAD_PRIORITY, CHARGE_PRIORITY, PRODUCE_PRIORITY."
+  },
+
+  "inverter_defaults": {
+    "_comment": "Applied to every inverter unit across all households unless overridden.",
+    "unit_max_output_kw": 4.0,
+    "_unit_max_output_help": "Max output per inverter unit in kW.",
+    "avr_days_in_failure": 200,
+    "_avr_days_help": "Average days between failures. Uses exponential distribution.",
+    "min_failure_duration_hours": 4,
+    "max_failure_duration_hours": 72
+  },
+
+  "battery_defaults": {
+    "_comment": "Applied to every battery unit across all households unless overridden.",
+    "unit_capacity_kwh": 13.5,
+    "_unit_capacity_help": "Capacity per battery unit in kWh (13.5 = Tesla Powerwall).",
+    "efficiency": 0.9,
+    "_efficiency_help": "Round-trip efficiency as decimal (0.9 = 90%).",
+    "min_soc": 0.05,
+    "_min_soc_help": "Minimum state of charge as decimal (0.05 = 5%)."
+  },
+
+  "solar_defaults": {
+    "_comment": "Applied to every solar array unit across all households unless overridden.",
+    "unit_peak_power_kw": 5.0,
+    "_unit_peak_help": "Peak power per solar array unit in kW."
+  },
+
+  "household_templates": {
+    "_comment": "Default system sizing per household_type + wealth_level. Adjust counts after running tests if over/under sized.",
+    "studio_1_bed": {
+      "low":    { "solar_count": 1, "inverter_count": 1, "battery_count": 1 },
+      "middle": { "solar_count": 1, "inverter_count": 1, "battery_count": 1 },
+      "high":   { "solar_count": 2, "inverter_count": 1, "battery_count": 1 },
+      "luxury": { "solar_count": 2, "inverter_count": 2, "battery_count": 2 }
+    },
+    "small_family": {
+      "low":    { "solar_count": 1, "inverter_count": 1, "battery_count": 1 },
+      "middle": { "solar_count": 2, "inverter_count": 1, "battery_count": 1 },
+      "high":   { "solar_count": 3, "inverter_count": 2, "battery_count": 2 },
+      "luxury": { "solar_count": 4, "inverter_count": 2, "battery_count": 2 }
+    },
+    "large_family": {
+      "low":    { "solar_count": 2, "inverter_count": 1, "battery_count": 1 },
+      "middle": { "solar_count": 3, "inverter_count": 2, "battery_count": 2 },
+      "high":   { "solar_count": 4, "inverter_count": 2, "battery_count": 3 },
+      "luxury": { "solar_count": 5, "inverter_count": 3, "battery_count": 3 }
+    }
+  },
+
+  "neighborhood": {
+    "mode": "auto",
+    "_mode_help": "'auto' for random distribution, 'manual' for exact counts.",
+
+    "auto": {
+      "_comment": "Only active when mode is 'auto'.",
+      "total_households": 22,
+      "_total_help": "Total number of households to generate.",
+      "type_distribution": {
+        "_comment": "Probability per household type. Must sum to 1.0.",
+        "studio_1_bed": 0.25,
+        "small_family": 0.45,
+        "large_family": 0.30
+      },
+      "wealth_distribution": {
+        "_comment": "Probability per wealth level. Must sum to 1.0.",
+        "low":    0.25,
+        "middle": 0.40,
+        "high":   0.25,
+        "luxury": 0.10
+      }
+    },
+
+    "manual": {
+      "_comment": "Only active when mode is 'manual'. Define exact counts per type+wealth.",
+      "counts": {
+        "studio_1_bed": { "low": 2, "middle": 2, "high": 1, "luxury": 1 },
+        "small_family": { "low": 2, "middle": 3, "high": 2, "luxury": 1 },
+        "large_family": { "low": 2, "middle": 2, "high": 2, "luxury": 2 }
+      }
+    },
+
+    "overrides": {
+      "_comment": "Override specific fields for specific household ids. Only specify what changes.",
+      "_supported_fields": ["solar_count", "inverter_count", "battery_count", "unit_peak_power_kw", "unit_max_output_kw", "unit_capacity_kwh"],
+      "_example": {
+        "house_03": { "solar_count": 3, "battery_count": 2 },
+        "house_07": { "unit_peak_power_kw": 7.0, "inverter_count": 1 }
+      }
+    }
+  }
+}

@@ -10,10 +10,14 @@ Usage:
 Author: Team 3 - GreenGrid Project
 Course: COM 139 - Simulation & Visualization
 Universidad Panamericana, Guadalajara
+
+Update:
+- Supports a single household or a neighborhood of households based on the configuration file.
 """
 
 from src.Simulation import Simulation
 from src.DataLogger import DataLogger
+from src.HouseholdSimulation import HouseholdSimulation
 import sys
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -87,47 +91,31 @@ def main():
         # Print header
         print_header()
         
-        # Load and display configuration
-        print("\n Loading configuration from config.json...")
-        sim = Simulation(config_path=os.path.join(BASE_DIR, 'config.json'))
-        print_configuration_info(sim.config)
-        
         # Confirm before running
         print("\n" + "-" * 70)
-        response = input("▶ Press ENTER to start simulation (or Ctrl+C to cancel): ")
-        
-        # Run simulation
-        print("\n Starting simulation...")
-        results = sim.run()
-        
-        # Print results summary
-        print_results_summary(results)
-        
-        # Save data
-        print("\n" + "=" * 70)
-        print(" SAVING SIMULATION DATA")
-        print("=" * 70)
-        
-        logger = DataLogger(results, sim.config, output_dir=os.path.join(BASE_DIR, 'results'))
-        saved_files = logger.save_all()
-        
-        # Print saved files
-        print("\n Files saved:")
-        for file_type, filepath in saved_files.items():
-            if filepath:
-                print(f"  ✓ {filepath}")
-        
-        # Final message
-        print("\n" + "=" * 70)
-        print(" SIMULATION COMPLETED SUCCESSFULLY!")
-        print("=" * 70)
-        print("\n Next Steps:")
-        print("  1. Review answers.txt for project questions")
-        print("  2. Check hourly_data.csv for detailed analysis")
-        print("  3. Use summary.json for quick insights")
-        print("  4. Try different strategies or seasons by editing config.json")
-        print("\n Ready for Phase 2 (Visualization) and Phase 3 (Machine Learning)\n")
-        
+        print("\n SELECT MODE:")
+        print("  1. Single household (config.json)")
+        print("  2. Neighborhood     (neighborhood_config.json)")
+        print("-" * 70)
+        mode = input("▶ Enter 1 or 2 (or Ctrl+C to cancel): ").strip()
+
+        if mode == '2':
+            neighborhood = HouseholdSimulation(
+                config_path=os.path.join(BASE_DIR, 'neighborhood_config.json')
+            )
+            input("▶ Press ENTER to start neighborhood simulation: ")
+            neighborhood.run()
+        else:
+            sim = Simulation(config_path=os.path.join(BASE_DIR, 'config.json'))
+            print_configuration_info(sim.config)
+            input("▶ Press ENTER to start simulation: ")
+            results = sim.run()
+            print_results_summary(results)
+            logger = DataLogger(results, sim.config, output_dir=os.path.join(BASE_DIR, 'results'))
+            saved_files = logger.save_all()
+            for file_type, filepath in saved_files.items():
+                if filepath:
+                    print(f"  ✓ {filepath}")
         return 0
         
     except KeyboardInterrupt:
@@ -144,6 +132,8 @@ def main():
         print(f"\n Error during simulation:")
         print(f"   {type(e).__name__}: {e}")
         print("\n   Please check your configuration and try again.")
+        import traceback
+        traceback.print_exc()
         return 1
 
 if __name__ == "__main__":
