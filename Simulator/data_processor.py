@@ -627,7 +627,7 @@ def main():
     # ── Default paths (edit these to match your results folders) ──────────
     DEFAULT_WELL = 'results/neighborhood/sim_20260306_182527_LOAD_PRIORITY_summer_360d'
     DEFAULT_UNADVISED = 'results/neighborhood/sim_20260306_182811_LOAD_PRIORITY_summer_360d'
-    DEFAULT_OUT  = 'dashboard/data'
+    DEFAULT_OUT  = '../Dashboard/data'
     # ───────────────────────────────────────────────────────────────────────
 
     parser = argparse.ArgumentParser(description='GreenGrid Data Processor')
