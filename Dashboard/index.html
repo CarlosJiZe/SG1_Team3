@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GreenGrid Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+
+<!-- NAVBAR -->
+
+<nav class="navbar">
+
+<div class="nav-logo">GreenGrid</div>
+
+<div class="nav-links">
+
+<a href="#problem">Problem</a>
+<a href="#mistake">Mistake</a>
+<a href="#solution">Solution</a>
+<a href="#impact">Impact</a>
+
+</div>
+
+</nav>
+
+
+
+<!-- HERO -->
+
+<header class="hero">
+
+<h1>GreenGrid Dashboard</h1>
+<p>Harnessing Solar Energy for a Sustainable Neighborhood</p>
+
+</header>
+
+
+
+<!-- INTRO -->
+
+<section class="intro">
+
+<div class="intro-grid">
+
+<div>
+<img src="images/solar-house.jpg" class="intro-img">
+</div>
+
+<div>
+
+<h2>
+
+<span class="material-icons section-icon">solar_power</span>
+
+Why Solar Energy Matters
+
+</h2>
+
+<p>
+
+Residential solar systems are transforming how neighborhoods generate electricity.
+Smart system design reduces costs, lowers emissions, and improves energy independence.
+
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<div class="divider"></div>
+
+
+
+<!-- ACT 1 -->
+
+<section class="act" id="problem">
+
+<h2>
+
+<span class="material-icons section-icon">bolt</span>
+
+The Problem
+
+</h2>
+
+<p class="section-subtitle">
+
+Without solar, the neighborhood pays high energy costs and produces large carbon emissions.
+
+</p>
+
+
+
+<div id="kpis" class="kpi-grid">
+
+<div class="kpi-card">
+
+<h3>Annual Cost</h3>
+<p>$1,844</p>
+
+<div class="progress-bar">
+<div class="progress-fill" style="width:100%"></div>
+</div>
+
+</div>
+
+
+<div class="kpi-card">
+
+<h3>CO₂ Emissions</h3>
+<p>109 tons</p>
+
+<div class="progress-bar">
+<div class="progress-fill" style="width:100%"></div>
+</div>
+
+</div>
+
+
+<div class="kpi-card">
+
+<h3>Self Sufficiency</h3>
+<p>0%</p>
+
+<div class="progress-bar">
+<div class="progress-fill" style="width:5%"></div>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<div class="visual-banner">
+<img src="images/solar-install.jpg">
+</div>
+
+
+
+<!-- ACT 2 -->
+
+<section class="act" id="mistake">
+
+<h2>
+
+<span class="material-icons section-icon">warning</span>
+
+The Common Mistake
+
+</h2>
+
+<p class="section-subtitle">
+
+Installing solar without proper system design wastes potential savings and energy.
+
+</p>
+
+
+
+<div class="scenario-toggle">
+
+<button class="scenario-btn active" data-scenario="no_solar">No Solar</button>
+<button class="scenario-btn" data-scenario="bad_design">Bad Design</button>
+<button class="scenario-btn" data-scenario="optimized">Optimized</button>
+
+</div>
+
+
+
+<div id="duckCurve" class="chart"></div>
+
+</section>
+
+
+
+<!-- ACT 3 -->
+
+<section class="act" id="solution">
+
+<h2>
+
+<span class="material-icons section-icon">eco</span>
+
+The Optimized Solution
+
+</h2>
+
+<p class="section-subtitle">
+
+A well designed solar system improves efficiency and dramatically reduces emissions.
+
+</p>
+
+
+
+<!-- TIME FILTER -->
+
+<div class="time-filter">
+
+<button class="time-btn active">Day</button>
+<button class="time-btn">Week</button>
+<button class="time-btn">Month</button>
+<button class="time-btn">Quarter</button>
+
+</div>
+
+
+
+<div id="timeseries" class="chart"></div>
+
+</section>
+
+
+
+<!-- SCENARIO COMPARISON -->
+
+<section class="comparison">
+
+<h2>
+
+<span class="material-icons section-icon">compare</span>
+
+Scenario Comparison
+
+</h2>
+
+<table class="comparison-table">
+
+<tr>
+<th>Scenario</th>
+<th>Annual Cost</th>
+<th>CO₂ Avoided</th>
+<th>Self Sufficiency</th>
+</tr>
+
+<tr>
+<td>No Solar</td>
+<td>$1,844</td>
+<td>0 kg</td>
+<td>0%</td>
+</tr>
+
+<tr>
+<td>Bad Design</td>
+<td>$417</td>
+<td>85,332 kg</td>
+<td>60%</td>
+</tr>
+
+<tr>
+<td>Optimized</td>
+<td>$233</td>
+<td>96,784 kg</td>
+<td>67%</td>
+</tr>
+
+</table>
+
+</section>
+
+
+
+<!-- IMPACT -->
+
+<section class="impact" id="impact">
+
+<h2>
+
+<span class="material-icons section-icon">insights</span>
+
+Impact of Solar Optimization
+
+</h2>
+
+
+
+<div class="impact-grid">
+
+<div class="impact-card">
+<h3>$1,612</h3>
+<p>Annual Savings</p>
+</div>
+
+<div class="impact-card">
+<h3>96,784 kg</h3>
+<p>CO₂ Avoided</p>
+</div>
+
+<div class="impact-card">
+<h3>67%</h3>
+<p>Energy Self Sufficiency</p>
+</div>
+
+</div>
+
+</section>
+
+<section class="act">
+
+<h2>
+<span class="material-icons section-icon">scatter_plot</span>
+Neighborhood Energy Distribution
+</h2>
+
+<p class="section-subtitle">
+Each point represents one household in the simulated neighborhood.
+</p>
+
+<div id="houseScatter" class="chart"></div>
+
+</section>
+
+
+<section class="act">
+
+<h2>
+<span class="material-icons section-icon">timeline</span>
+Solar Production vs Energy Consumption
+</h2>
+
+<p class="section-subtitle">
+Comparison between solar generation and neighborhood demand.
+</p>
+
+<div id="energyBalance" class="chart"></div>
+
+</section>
+
+
+<section class="act simulation-info">
+
+<h2>
+<span class="material-icons section-icon">settings</span>
+Simulation Overview
+</h2>
+
+<div class="simulation-grid">
+
+<div class="sim-card">
+<h3>24</h3>
+<p>Households Simulated</p>
+</div>
+
+<div class="sim-card">
+<h3>360</h3>
+<p>Days Simulated</p>
+</div>
+
+<div class="sim-card">
+<h3>3</h3>
+<p>Energy Scenarios</p>
+</div>
+
+</div>
+
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+
+<p>GreenGrid Simulation — COM 139 | Universidad Panamericana</p>
+
+</footer>
+
+
+
+<script src="main.js"></script>
+
+</body>
+</html>
