@@ -81,6 +81,7 @@ Promise.all([
     initCo2BulletChart()
     initCo2Equivalencies()
     wireScenarioToggle()
+    wireTimeBtns()
     wireSolutionModeToggle()
   }, 100)
 }).catch(err => console.error("Error loading dashboard data:", err))
@@ -2208,12 +2209,6 @@ function wireTimeBtns() {
     d3.select(this).classed("active", true)
     mistakeTimeGranularity = m[this.textContent.trim()] || "monthly"
     drawMistakeTimeseries(mistakeTimeGranularity)
-  })
-  d3.selectAll("#solutionTimeFilter .time-btn").on("click", function() {
-    d3.selectAll("#solutionTimeFilter .time-btn").classed("active", false)
-    d3.select(this).classed("active", true)
-    currentTimeGranularity = m[this.textContent.trim()] || "monthly"
-    drawEnergyBalance(currentTimeGranularity, "well_designed")
   })
 }
 
