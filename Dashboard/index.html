@@ -1,393 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>GreenGrid Dashboard</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-<script src="https://d3js.org/d3.v7.min.js"></script>
-
-<link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenGrid Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-
 <!-- NAVBAR -->
-
 <nav class="navbar">
-
-<div class="nav-logo">GreenGrid</div>
-
-<div class="nav-links">
-
-<a href="#problem">Problem</a>
-<a href="#mistake">Mistake</a>
-<a href="#solution">Solution</a>
-<a href="#impact">Impact</a>
-
-</div>
-
+  <div class="nav-logo">GreenGrid</div>
+  <div class="nav-links">
+    <a href="#problem">Problem</a>
+    <a href="#paradox">Paradox</a>
+    <a href="#mistake">Mistake</a>
+    <a href="#solution">Solution</a>
+  </div>
 </nav>
 
-
-
 <!-- HERO -->
-
 <header class="hero">
-
-<h1>GreenGrid Dashboard</h1>
-<p>Harnessing Solar Energy for a Sustainable Neighborhood</p>
-
+  <h1>GreenGrid Dashboard</h1>
+  <p>Harnessing Solar Energy for a Sustainable Neighborhood</p>
 </header>
 
-
+<!-- SIMULATION OVERVIEW -->
+<section class="act simulation-info">
+  <h2><span class="material-icons section-icon">settings</span>Simulation Overview</h2>
+  <div class="simulation-grid">
+    <div class="sim-card"><h3>24</h3><p>Households Simulated</p></div>
+    <div class="sim-card"><h3>360</h3><p>Days Simulated</p></div>
+    <div class="sim-card"><h3>3</h3><p>Energy Scenarios</p></div>
+  </div>
+</section>
 
 <!-- INTRO -->
-
 <section class="intro">
-
-<div class="intro-grid">
-
-<div>
-<img src="images/solar-house.jpg" class="intro-img">
-</div>
-
-<div>
-
-<h2>
-
-<span class="material-icons section-icon">solar_power</span>
-
-Why Solar Energy Matters
-
-</h2>
-
-<p>
-
-Residential solar systems are transforming how neighborhoods generate electricity.
-Smart system design reduces costs, lowers emissions, and improves energy independence.
-
-</p>
-
-</div>
-
-</div>
-
+  <div class="intro-grid">
+    <div><img src="images/solar-house.jpg" class="intro-img"></div>
+    <div>
+      <h2><span class="material-icons section-icon">solar_power</span>Why Solar Energy Matters</h2>
+      <p>Residential solar systems are transforming how neighborhoods generate electricity. Smart system design reduces costs, lowers emissions, and improves energy independence.</p>
+    </div>
+  </div>
 </section>
 
-
-
-<div class="divider"></div>
-
-
-
-<!-- ACT 1 -->
-
+<!-- ACT 1 — THE PROBLEM -->
 <section class="act" id="problem">
+  <h2><span class="material-icons section-icon">bolt</span>The Problem</h2>
+  <p class="section-subtitle">Every household type, every income level, one shared problem. Here is what it costs each of them.</p>
 
-<h2>
+  <div id="kpis" class="kpi-grid">
+    <div class="kpi-card">
+      <h3>Annual Cost</h3>
+      <p id="kpi-cost">—</p>
+      <div class="progress-bar"><div id="kpi-cost-bar" class="progress-fill" style="width:100%;background:#e57373"></div></div>
+    </div>
+    <div class="kpi-card">
+      <h3>CO₂ Emissions</h3>
+      <p id="kpi-co2">—</p>
+      <div class="progress-bar"><div id="kpi-co2-bar" class="progress-fill" style="width:100%;background:#90a4ae"></div></div>
+    </div>
+    <div class="kpi-card">
+      <h3>Self Sufficiency</h3>
+      <p id="kpi-ss">—</p>
+      <div class="progress-bar"><div id="kpi-ss-bar" class="progress-fill" style="width:5%;background:#e57373"></div></div>
+    </div>
+  </div>
+  <p id="problem-note" class="sim-note" style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;">Aggregated totals for the full 24-household neighborhood over 360 simulated days.</p>
 
-<span class="material-icons section-icon">bolt</span>
+  <h3 style="font-size:20px;font-weight:600;margin:50px 0 6px;color:#1e2b24;">
+    <span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">home</span>
+    Every Household Pays. No Exceptions.
+  </h3>
+  <p class="section-subtitle" style="margin-bottom:20px;">Studio or large family, without solar every kilowatt-hour consumed is a kilowatt-hour billed. Consumption patterns differ, but the dependency is universal.</p>
+  <div id="costByType" class="chart"></div>
+  <p class="chart-data-note" style="font-size:11px;color:#aaa;margin-top:10px;text-align:center;">
+    Based on 360-day simulation &nbsp;·&nbsp; Grid rate: $0.0075/kWh &nbsp;·&nbsp; CO₂ factor: 0.444 kg/kWh (CFE Mexico)
+  </p>
 
-The Problem
-
-</h2>
-
-<p class="section-subtitle">
-
-Without solar, the neighborhood pays high energy costs and produces large carbon emissions.
-
-</p>
-
-
-
-<div id="kpis" class="kpi-grid">
-
-<div class="kpi-card">
-
-<h3>Annual Cost</h3>
-<p>$1,844</p>
-
-<div class="progress-bar">
-<div class="progress-fill" style="width:100%"></div>
-</div>
-
-</div>
-
-
-<div class="kpi-card">
-
-<h3>CO₂ Emissions</h3>
-<p>109 tons</p>
-
-<div class="progress-bar">
-<div class="progress-fill" style="width:100%"></div>
-</div>
-
-</div>
-
-
-<div class="kpi-card">
-
-<h3>Self Sufficiency</h3>
-<p>0%</p>
-
-<div class="progress-bar">
-<div class="progress-fill" style="width:5%"></div>
-</div>
-
-</div>
-
-</div>
-
+  <h3 style="font-size:20px;font-weight:600;margin:50px 0 6px;color:#1e2b24;">
+    <span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">attach_money</span>
+    Wealth Shapes Consumption. Not the Bill.
+  </h3>
+  <p class="section-subtitle" style="margin-bottom:20px;">The more affluent the household, the higher the consumption multiplier, and the higher the grid bill. Solar changes that equation for everyone.</p>
+  <div id="wealthLollipop" class="chart"></div>
+  <p id="wealth-data-note" class="chart-data-note" style="font-size:11px;color:#aaa;margin-top:10px;text-align:center;">
+    Average per household &nbsp;·&nbsp; Grid rate: $0.0075/kWh &nbsp;·&nbsp; CO₂ factor: 0.444 kg/kWh (CFE Mexico)
+  </p>
 </section>
 
-
-
+<!-- VISUAL BANNER -->
 <div class="visual-banner">
-<img src="images/solar-install.jpg">
+  <img src="images/solar-install.jpg">
 </div>
 
+<!-- ACT 1.5 — THE PARADOX -->
+<section class="act" id="paradox">
+  <h2><span class="material-icons section-icon">wb_twilight</span>The Paradox of Solar Adoption</h2>
+  <p class="section-subtitle">Solar energy solves the supply problem. Human behavior creates the timing problem.</p>
 
+  <div class="scenario-toggle" id="paradoxToggle">
+    <button class="scenario-btn active" data-pscenario="no_solar">No Solar</button>
+    <button class="scenario-btn" data-pscenario="bad_design">Bad Design</button>
+    <button class="scenario-btn" data-pscenario="optimized">Optimized</button>
+  </div>
+  <div id="paradoxDuckCurve" class="chart"></div>
+  <p id="paradox-source-note" style="text-align:center;font-size:11px;color:#bbb;font-family:Poppins,sans-serif;margin:8px 0 0;">Each point is the average power (kW) at that hour, computed across all simulated days · no_solar scenario</p>
 
-<!-- ACT 2 -->
+  <p style="color:#4a6358;line-height:1.8;margin:28px 0 32px;">
+    This shape is known as the <strong>Duck Curve</strong>. At noon, solar floods the grid with cheap energy nobody needs. By 7 PM, the sun is gone and demand surges, forcing the grid to ramp up fast or charge expensive rates. The six numbers below quantify exactly how wide that gap is.
+  </p>
 
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <h3>Peak Solar Hour</h3>
+      <p id="kpi-solar-hour">—</p>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#2c7a55"></div></div>
+    </div>
+    <div class="kpi-card">
+      <h3>Avg. Peak Solar Output</h3>
+      <p id="kpi-solar-peak">—</p>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#2c7a55"></div></div>
+    </div>
+    <div class="kpi-card">
+      <h3>Demand at Solar Peak</h3>
+      <p id="kpi-load-at-solar">—</p>
+      <div class="progress-bar"><div id="kpi-load-at-solar-bar" class="progress-fill" style="width:50%;background:#e57373"></div></div>
+    </div>
+    <div class="kpi-card">
+      <h3>Peak Demand Hour</h3>
+      <p>18 to 20 h</p>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#e57373"></div></div>
+    </div>
+    <div class="kpi-card">
+      <h3>Avg. Peak Demand</h3>
+      <p id="kpi-peak">—</p>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#e57373"></div></div>
+    </div>
+    <div class="kpi-card">
+      <h3>Solar at Peak Demand</h3>
+      <p>0 kW</p>
+      <div class="progress-bar"><div class="progress-fill" style="width:2%;background:#66bb6a"></div></div>
+    </div>
+  </div>
+  <p style="font-size:11px;color:#aaa;margin-top:10px;font-family:Poppins,sans-serif;text-align:center;">
+    Values shown for the Well Designed System scenario · Hourly averages computed across all simulated days.
+  </p>
+
+  <h3 style="font-size:20px;font-weight:600;margin:50px 0 6px;color:#1e2b24;">
+    <span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">schedule</span>
+    The Gap That Storage Must Bridge
+  </h3>
+  <p class="section-subtitle" style="margin-bottom:30px;">Those 7 hours separate the moment of maximum supply from the moment of maximum need.</p>
+  <div id="paradoxClock" style="display:flex;justify-content:center;"></div>
+</section>
+
+<!-- VISUAL BANNER -->
+<div class="visual-banner">
+  <img src="images/solar-paradoxx.jpg">
+</div>
+
+<!-- ACT 2 — THE MISTAKE -->
 <section class="act" id="mistake">
+  <h2><span class="material-icons section-icon">warning</span>The Common Mistake</h2>
+  <p class="section-subtitle">Installing solar is not enough. A poorly designed system can leave you almost as dependent on the grid as before, paying nearly the same bills, producing nearly the same emissions.</p>
 
-<h2>
+  <h3 style="font-size:18px;font-weight:600;margin:40px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">policy</span>How Self-Sufficient Are You, Really?</h3>
+  <p class="section-subtitle" style="margin-bottom:24px;">A poorly designed system covers barely half your energy needs. A well-designed one makes you nearly independent.</p>
+  <div id="selfSufficiencyGauges" style="display:flex;justify-content:center;gap:80px;flex-wrap:wrap;padding:20px 0 10px;"></div>
 
-<span class="material-icons section-icon">warning</span>
+  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">summarize</span>The Full Picture</h3>
+  <p class="section-subtitle" style="margin-bottom:20px;">The difference between scenarios is not the technology. It is the design.</p>
+  <div class="comparison-table-wrapper">
+    <table class="comparison-table">
+      <tr><th>Scenario</th><th>Annual Cost</th><th>CO₂ Avoided</th><th>Self Sufficiency</th><th>Savings vs No Solar</th></tr>
+      <tbody id="comparison-tbody"></tbody>
+    </table>
+  </div>
+  <p id="comparison-note" style="font-size:11px;color:#999;margin-top:10px;line-height:1.6;font-family:Poppins,sans-serif;"></p>
 
-The Common Mistake
+  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">battery_alert</span>The Battery That Runs Dry</h3>
+  <p class="section-subtitle" style="margin-bottom:20px;">Full at noon. Empty at night. Remember those 7 hours? This is what happens inside the battery during that gap. One system arrives at peak demand with something left. The other does not.</p>
+  <div id="batterySocChart" class="chart"></div>
+  <p style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;">Hourly averages computed across all simulated days · Battery SoC at 18h marks the start of peak demand</p>
 
-</h2>
+  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">trending_down</span>Not a Bad Day. A Bad System.</h3>
+  <p class="section-subtitle" style="margin-bottom:16px;">Day after day, week after week, month after month. The numbers change but the story does not. The unadvised system does not have bad days. It has a bad design.</p>
 
-<p class="section-subtitle">
+  <div class="metric-tabs" id="mistakeMetricTabs">
+    <button class="metric-tab active" data-metric="import">Import</button>
+    <button class="metric-tab" data-metric="export">Export</button>
+    <button class="metric-tab" data-metric="generated">Generated</button>
+    <button class="metric-tab" data-metric="consumed">Consumed</button>
+  </div>
 
-Installing solar without proper system design wastes potential savings and energy.
+  <div class="time-filter" id="mistakeTimeFilter">
+    <button class="time-btn">Day</button>
+    <button class="time-btn">Week</button>
+    <button class="time-btn active">Month</button>
+    <button class="time-btn">Quarter</button>
+    <button class="time-btn">Year</button>
+  </div>
+  <div id="mistakeTimeseries" class="chart"></div>
+  <p id="mistake-note" style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;">
+    Grid Imported = energy the system had to purchase from the utility grid · Totals for the full neighborhood
+  </p>
 
-</p>
+  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">manage_search</span>The Design Failure, Up Close</h3>
+  <p class="section-subtitle" style="margin-bottom:16px;">Generation, consumption, imports and exports broken down by household type and wealth level. Not every household pays the same price for a bad design.</p>
 
+  <div id="energyBalanceControls" style="display:flex;flex-direction:row;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:11px;color:#888;font-family:Poppins,sans-serif;white-space:nowrap;">Group by ·</span>
+      <div class="scenario-toggle" style="margin:0;" id="grpGroupToggle">
+        <button class="scenario-btn active" data-group="by_type">By Type</button>
+        <button class="scenario-btn" data-group="by_wealth">By Wealth</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:11px;color:#888;font-family:Poppins,sans-serif;white-space:nowrap;">Scenario ·</span>
+      <div class="scenario-toggle" style="margin:0;" id="grpScenToggle">
+        <button class="scenario-btn active" data-grp-scenario="well_designed">Well Designed</button>
+        <button class="scenario-btn" data-grp-scenario="unadvised">Unadvised</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:11px;color:#888;font-family:Poppins,sans-serif;white-space:nowrap;">Values ·</span>
+      <div class="scenario-toggle" style="margin:0;" id="grpModeToggle">
+        <button class="scenario-btn active" data-grp-mode="totals">Totals</button>
+        <button class="scenario-btn" data-grp-mode="averages">Averages</button>
+      </div>
+    </div>
+  </div>
 
+  <div id="energyBalance" class="chart"></div>
+  <p id="energyBalance-note" style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;"></p>
 
-<div class="scenario-toggle">
-
-<button class="scenario-btn active" data-scenario="no_solar">No Solar</button>
-<button class="scenario-btn" data-scenario="bad_design">Bad Design</button>
-<button class="scenario-btn" data-scenario="optimized">Optimized</button>
-
-</div>
-
-
-
-<div id="duckCurve" class="chart"></div>
-
+  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">scatter_plot</span>Find Your House. Then Ask Why It's Still Above the Line.</h3>
+  <p class="section-subtitle" style="margin-bottom:20px;">Each dot is a household. Points above the break-even line consume more than they generate. With the unadvised system, most of them do, and they all have solar panels on the roof.</p>
+  <div id="scatterToggleContainer"></div>
+  <div id="houseScatter" class="chart"></div>
+  <p id="scatter-note" style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;"></p>
 </section>
 
+<!-- VISUAL BANNER -->
+<div class="visual-banner">
+  <img src="images/solar-mistak.jpg">
+</div>
 
-
-<!-- ACT 3 -->
-
+<!-- ACT 3 — THE SOLUTION -->
 <section class="act" id="solution">
-
-<h2>
-
-<span class="material-icons section-icon">eco</span>
-
-The Optimized Solution
-
-</h2>
-
-<p class="section-subtitle">
-
-A well designed solar system improves efficiency and dramatically reduces emissions.
-
-</p>
-
-
-
-<!-- TIME FILTER -->
-
-<div class="time-filter">
-
-<button class="time-btn active">Day</button>
-<button class="time-btn">Week</button>
-<button class="time-btn">Month</button>
-<button class="time-btn">Quarter</button>
-
-</div>
-
-
-
-<div id="timeseries" class="chart"></div>
-
-</section>
-
-
-
-<!-- SCENARIO COMPARISON -->
-
-<section class="comparison">
-
-<h2>
-
-<span class="material-icons section-icon">compare</span>
-
-Scenario Comparison
-
-</h2>
-
-<table class="comparison-table">
-
-<tr>
-<th>Scenario</th>
-<th>Annual Cost</th>
-<th>CO₂ Avoided</th>
-<th>Self Sufficiency</th>
-</tr>
-
-<tr>
-<td>No Solar</td>
-<td>$1,844</td>
-<td>0 kg</td>
-<td>0%</td>
-</tr>
-
-<tr>
-<td>Bad Design</td>
-<td>$417</td>
-<td>85,332 kg</td>
-<td>60%</td>
-</tr>
-
-<tr>
-<td>Optimized</td>
-<td>$233</td>
-<td>96,784 kg</td>
-<td>67%</td>
-</tr>
-
-</table>
-
-</section>
-
-
-
-<!-- IMPACT -->
-
-<section class="impact" id="impact">
-
-<h2>
-
-<span class="material-icons section-icon">insights</span>
-
-Impact of Solar Optimization
-
-</h2>
-
-
-
-<div class="impact-grid">
-
-<div class="impact-card">
-<h3>$1,612</h3>
-<p>Annual Savings</p>
-</div>
-
-<div class="impact-card">
-<h3>96,784 kg</h3>
-<p>CO₂ Avoided</p>
-</div>
-
-<div class="impact-card">
-<h3>67%</h3>
-<p>Energy Self Sufficiency</p>
-</div>
-
-</div>
-
-</section>
-
-<section class="act">
-
-<h2>
-<span class="material-icons section-icon">scatter_plot</span>
-Neighborhood Energy Distribution
-</h2>
-
-<p class="section-subtitle">
-Each point represents one household in the simulated neighborhood.
-</p>
-
-<div id="houseScatter" class="chart"></div>
-
-</section>
-
-
-<section class="act">
-
-<h2>
-<span class="material-icons section-icon">timeline</span>
-Solar Production vs Energy Consumption
-</h2>
-
-<p class="section-subtitle">
-Comparison between solar generation and neighborhood demand.
-</p>
-
-<div id="energyBalance" class="chart"></div>
-
-</section>
-
-
-<section class="act simulation-info">
-
-<h2>
-<span class="material-icons section-icon">settings</span>
-Simulation Overview
-</h2>
-
-<div class="simulation-grid">
-
-<div class="sim-card">
-<h3>24</h3>
-<p>Households Simulated</p>
-</div>
-
-<div class="sim-card">
-<h3>360</h3>
-<p>Days Simulated</p>
-</div>
-
-<div class="sim-card">
-<h3>3</h3>
-<p>Energy Scenarios</p>
-</div>
-
-</div>
+  <h2><span class="material-icons section-icon">eco</span>The Optimized Solution</h2>
+  <p class="section-subtitle">When panel capacity, battery size and energy management are properly designed, every metric shifts in your favor.</p>
+
+  <div style="display:flex;align-items:center;gap:8px;margin:20px 0 30px;">
+    <span style="font-size:11px;color:#888;font-family:Poppins,sans-serif;white-space:nowrap;">View as ·</span>
+    <div class="scenario-toggle" style="margin:0;" id="solutionModeToggle">
+      <button class="scenario-btn active" data-solution-mode="total">Neighborhood Total</button>
+      <button class="scenario-btn" data-solution-mode="average">Per Household Avg</button>
+    </div>
+  </div>
+
+  <div class="impact-grid" style="margin-bottom:40px;">
+    <div class="impact-card"><h3 id="impact-savings">—</h3><p>Annual Savings vs No Solar</p></div>
+    <div class="impact-card"><h3 id="impact-co2">—</h3><p>CO₂ Avoided (kg)</p></div>
+    <div class="impact-card"><h3 id="impact-ss">—</h3><p>Energy Self Sufficiency</p></div>
+  </div>
+
+  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">price_check</span>The Bottom Line</h3>
+  <p class="section-subtitle" style="margin-bottom:20px;">Only a well-designed system crosses the break-even line. The other two are still paying. One of them has solar panels.</p>
+  <div id="bulletChart" class="chart"></div>
+  <p id="bullet-note" style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;">Net annual cost = grid import cost − grid export revenue · Break-even at $0 · Negative = system earns money</p>
+
+  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">co2</span>The Carbon Impact</h3>
+  <p class="section-subtitle" style="margin-bottom:20px;">A well-designed system does not just reduce emissions. It goes negative, exporting clean energy that displaces dirty grid generation for everyone connected to it.</p>
+  <div id="co2BulletChart" class="chart"></div>
+  <p id="co2-bullet-note" style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;">CO₂ emissions = total load × 0.444 kg/kWh (CFE Mexico grid factor) · CO₂ avoided = baseline − actual emissions</p>
+
+  <h3 id="co2EquivTitle" style="font-size:18px;font-weight:600;margin:30px 0 16px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">forest</span>What <span id="co2AvoidedLabel">164,000</span> kg of CO₂ Actually Means</h3>
+  <div id="co2Equivalencies" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:8px;"></div>
+
+  <p style="font-size:20px;font-weight:300;color:#1e2b24;font-family:Poppins,sans-serif;text-align:center;margin:40px auto 36px;max-width:640px;line-height:1.6;letter-spacing:0.01em;">
+    <em>"The technology exists. The data is clear.<br>The only variable left is the decision."</em>
+  </p>
+
+  <div style="margin-top:24px;padding:20px 24px;background:#f9f9f7;border-radius:10px;border-left:3px solid #c8d8c0;">
+    <p style="font-size:11px;font-weight:600;color:#555;font-family:Poppins,sans-serif;margin:0 0 10px;text-transform:uppercase;letter-spacing:0.05em;">References</p>
+    <p style="font-size:10.5px;color:#666;font-family:Poppins,sans-serif;line-height:2;margin:0;">
+      Nowak, D. J., &amp; Crane, D. E. (2002). Carbon storage and sequestration by urban trees in the USA. <em>Environmental Pollution, 116</em>(3), 381–389. <a href="https://doi.org/10.1016/S0269-7491(01)00214-7" target="_blank" style="color:#2c7a55;">https://doi.org/10.1016/S0269-7491(01)00214-7</a>
+      <br>
+      U.S. Environmental Protection Agency. (2024). <em>Greenhouse gas equivalencies calculator — calculations and references</em> [Factor: 0.243 kg CO₂e/km, gasoline passenger vehicle]. <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references" target="_blank" style="color:#2c7a55;">https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references</a>
+      <br>
+      U.S. Environmental Protection Agency. (2024). <em>Greenhouse gas equivalencies calculator — calculations and references</em> [Factor: 4,798 kg CO₂/home/year]. <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references" target="_blank" style="color:#2c7a55;">https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references</a>
+      <br>
+      Secretaría de Medio Ambiente y Recursos Naturales. (2025, February 28). <em>Aviso: Factor de emisión del Sistema Eléctrico Nacional 2024</em>. Comisión Reguladora de Energía. <a href="https://www.gob.mx/cms/uploads/attachment/file/981194/aviso_fesen_2024.pdf" target="_blank" style="color:#2c7a55;">https://www.gob.mx/cms/uploads/attachment/file/981194/aviso_fesen_2024.pdf</a>
+    </p>
+  </div>
 
 </section>
 
 <!-- FOOTER -->
-
 <footer>
-
-<p>GreenGrid Simulation — COM 139 | Universidad Panamericana</p>
-
+  <p>GreenGrid Simulation — COM 139 | Universidad Panamericana</p>
 </footer>
 
-
-
 <script src="main.js"></script>
-
 </body>
 </html>

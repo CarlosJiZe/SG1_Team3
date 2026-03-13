@@ -1,0 +1,271 @@
+Date: 2026-03-05
+Team: Team 3
+
+Member: Carlos Jimenez Zepeda
+
+Summary
+Today we kicked off Phase 2 of the GreenGrid project. The main focus was
+refactoring the simulator to support multiple solar panels, inverters, and
+batteries as independent objects, laying the foundation for the multi-household
+simulation and dashboard required in this phase. I also extended the per-component
+logging in hourly_data to capture individual inverter and battery metrics.
+
+Work completed
+
+1) Multi-component architecture refactor (src/)
+- EnergyManagementSystem.py: refactored distribute_energy() to accept a list
+  of batteries instead of a single object. Added _charge_batteries() and
+  _discharge_batteries() helper methods that charge/discharge in sequential
+  order (BMS pattern).
+- Inverter.py: added panels_connected attribute to track how many solar panels
+  feed each inverter independently. No changes to core logic.
+- Simulation.py: full refactor to use lists (self.inverters, self.batteries).
+  Panel distribution algorithm assigns panels_per_inverter = total // count,
+  remainder to the last inverter. Each inverter now runs its own independent
+  SimPy failure_process in parallel.
+
+2) Per-component detail logging
+Added inverter_detail and battery_detail dicts inside the simulation loop.
+These are unpacked into hourly_data using ** so column names scale dynamically
+with the number of components (inverter_1_generated_kw, battery_2_soc, etc.).
+Carlos selected Option A: SoC per battery only, no charge/discharge tracking.
+
+Notes / Issues
+- When inverter 1 failed in the 3/2/2 config, only 1 panel was affected because
+  inverter 2 (with 2 panels) kept running independently. This validated that the
+  parallel failure_process architecture works correctly.
+
+AI assistance
+I used Claude throughout the session for resolving some architecture design doubs, minimum code
+generation (doubs in some sintaxys and structures), and debugging.
+
+Next steps
+- Implement multi-household support with household types and wealth multipliers.
+- Build the data preparation module for neighborhood-level aggregation.
+
+Date: 2026-03-07
+Team: Team 3
+
+Member: Carlos Jimenez Zepeda
+
+Summary
+Today focused on completing the multi-household simulator and the full data
+preparation pipeline for the dashboard. By end of session, all five dashboard
+JSON files were generated and validated.
+
+Work completed
+
+1) HouseholdSimulation.py — multi-household orchestrator
+- Implemented HouseholdSimulation class supporting 'auto' and 'manual'
+  generation modes from neighborhood_config.json.
+- Per-household seed uses base_seed + index for reproducible but varied results.
+- Output saved to results/neighborhood/sim_{timestamp}_{strategy}_{season}_{days}d/{house_id}/
+
+2) Supporting changes
+- DataLogger.py: added use_subfolder=False so neighborhood runs save CSVs
+  directly into each house directory.
+- main.py: added mode selection (single household vs neighborhood) and removed
+  duplicate simulation call that ran unconditionally.
+- __init__.py: added HouseholdSimulation to package exports.
+
+3) neighborhood_config.json
+- Configured 24-house, 360-day summer simulation covering all household type
+  and wealth level combinations across two scenarios: well_designed and unadvised.
+- Validated neighborhood_summary.json: wealth multipliers, annual kWh ranges,
+  and self-sufficiency values within expected ranges.
+
+4) data_processor.py — bug fixes and validation
+- Bug #1: write_json() crashed when output path had no directory component.
+- Bug #2: aggregate_monthly/quarterly used 30/90-day arithmetic instead of
+  real calendar dates, producing wrong month labels. Refactored to use the
+  'date' field from daily rows.
+- Bug #4 (critical): build_no_solar() used different field names than
+  build_per_house(), which would have caused all no_solar values to return
+  undefined in D3. Unified all keys to match build_per_house() schema.
+- Bug #5: total_co2_avoided_kg was missing from by_wealth groups. Added.
+
+
+5) Dashboard template — local server test
+- Loaded the professor's provided Gapminder-style D3 template in the browser
+  using python3 -m http.server 8080 to confirm the local server setup works
+  correctly and the template renders as expected before Andrés starts building.
+
+Notes / Issues
+- data_processor.py was launched via VS Code Run button, which executes through
+  tempCodeRunnerFile.py and only sends the selected line. Resolved by running
+  directly from terminal.
+
+AI assistance
+Used Claude for code review and debugging throughout the session:
+- Reviewed HouseholdSimulation.py and identified structural bugs (__init__ typo,
+  misplaced methods, wrong config key, missing idx parameter).
+- Audited data_processor.py and identified all five bugs before running the code,
+  explaining root cause and fix for each one.
+- Explained why load-weighted self-sufficiency is more accurate than a simple
+  mean across households of different sizes.
+- Diagnosed the tempCodeRunnerFile.py execution error as a VS Code Run button
+  issue, not a code problem.
+- Reviewed the five output JSONs and confirmed physical consistency of values.
+
+Next steps
+- Andrés to design in the dashboard based on the PDF.
+
+Date: 2026-03-08
+Team: Team 3
+
+Member: Andres Gonzalez Gomez
+
+Summary:
+Today I focused on the visual design and initial implementation of the GreenGrid dashboard for Project II. The goal was to transform the simulation output into a structured visual narrative. I created the dashboard layout, defined the visual style, prepared the data structure for D3 visualizations, and implemented the first interactive charts. I also tested the dashboard locally using a Python server to verify that the page correctly loads the JSON data and renders the visual components.
+
+Work Completed:
+
+- Created the dashboard folder and initial HTML structure
+- Designed the overall page layout using sections that follow the project narrative (problem → common mistake → solution)
+- Added KPI cards to display high-level metrics from the simulation
+- Created multiple chart containers to host the required D3 visualizations
+- Implemented hover animations and card shadows to improve visual clarity and hierarchy
+- Added layout grids for charts and sections to improve spacing and responsiveness
+- Added placeholder JSON files for the required datasets (duck_curve, per_house, etc.)
+- Prepared the structure expected by D3 visualizations to allow future integration with simulation results
+
+Notes / Issues:
+
+- The dashboard required careful planning to balance aesthetics with the storytelling aspect requested by the assignment.
+- Since the simulation outputs multiple datasets, preparing the correct JSON structure was necessary before implementing visualizations.
+
+Next Steps:
+- Connect all visualizations to the real simulation outputs generated by the system
+- Implement the remaining required charts (energy export, battery usage, production vs consumption over time)
+- Add scenario toggles and time filters for interactive data exploration
+
+Date: 2026-03-09
+Team: Team 3
+
+Member: Carlos Jiménez Zepeda
+
+Summary:
+Today I focused on understanding the existing dashboard structure built by Andrés and connecting it to the real simulation outputs. After reviewing the codebase, I identified that the data processor was saving outputs inside the simulation folder instead of the dashboard folder, which needed to be corrected before any real data could be loaded. Once the pipeline was fixed, I connected the five simulation JSON outputs to the dashboard, replacing all placeholder data. I also reformatted both main.js and index.html to improve readability and maintainability.
+
+Work Completed:
+
+- Reviewed Andrés's dashboard structure and understood the layout, sections and placeholder data schema
+- Fixed the data processor output path so simulation results are saved directly into the dashboard folder
+- Removed the placeholder dashboard folder that was mistakenly created inside the simulation folder
+- Connected the five real simulation JSON outputs (overview.json, by_group.json, duck_curve.json, per_house.json, timeseries.json) to the dashboard, replacing all placeholder data
+- Reformatted main.js and index.html for improved readability and code structure
+
+Notes / Issues:
+
+- The data processor was outputting files to the wrong directory, which required path corrections before the dashboard could load real data
+- The placeholder JSON structure did not always match the real simulation output schema, requiring careful field mapping
+
+AI Assistance:
+- Used AI to help connect the five simulation JSON outputs to the existing D3 chart structure
+- Used AI to assist with the reformatting of main.js and index.html
+
+Next Steps:
+- Begin implementing the D3 visualizations using the now-connected real simulation data
+- Coordinate with Andrés on which charts to prioritize
+
+Date: 2026-03-10
+Team: Team 3
+
+Member: Carlos Jiménez Zepeda
+
+Summary:
+Today I focused on defining the full narrative structure of the dashboard and began implementing the Problem section. Working from the general outline the team had agreed on (problem, common mistake, solution), I expanded it into a more specific five-act narrative: the importance of solar energy, the problem of grid dependency, the paradox of solar adoption via the Duck Curve, the common mistake of installing a cheap underdimensioned system, and the optimized solution closing with an inspirational quote. Once the narrative was clear, I started building the Problem section, improving on the existing work Andrés had done and incorporating charts from other sections that fit better here.
+
+Work Completed:
+
+- Defined the full dashboard narrative structure: Solar Importance, The Problem, The Paradox, The Common Mistake, The Optimized Solution
+- Decided to close the dashboard with a strong inspirational quote to reinforce the call to action
+- Reorganized existing charts, moving relevant visualizations from other sections into The Problem section
+- Added animations to the charts in the Problem section to improve visual engagement
+- Implemented a bar chart breaking down consumption by household type, showing kWh, equivalent cost and CO2 emissions via toggle buttons
+- Implemented a lollipop chart breaking down the same metrics by wealth level, adding visual variety beyond standard bar charts
+- Retained and polished the KPI cards originally created by Andrés
+- Made hardcoded values flexible by reading them dynamically from the simulation JSON outputs
+
+Notes / Issues:
+
+- Deciding the narrative required aligning with the team first, since the structure affects how all sections connect to each other
+- Mixing bar charts and lollipop charts required careful styling to keep visual consistency across the dashboard
+
+AI Assistance:
+- Used AI to implement the metric toggle buttons between the two charts
+- Used AI to help replace hardcoded values with dynamic data reads from the JSON outputs
+
+Next Steps:
+- Continue building the remaining sections following the defined narrative structure
+- Begin work on The Paradox section featuring the Duck Curve
+
+Date: 2026-03-11
+Team: Team 3
+
+Member: Carlos Jiménez Zepeda
+
+Summary:
+Today I built the Paradox section from scratch and made significant progress on The Common Mistake section. The Paradox section did not exist yet since Andrés had only set up the Problem and Mistake sections, so I had to create it entirely. I also began The Common Mistake section, implementing the gauge charts, polishing the comparison table and adding the battery SoC chart as a central piece connecting the paradox narrative to the mistake narrative.
+
+Work Completed:
+
+- Created The Paradox section from scratch, inserting it between Problem and Mistake in the narrative flow
+- Polished the Duck Curve chart that was already in the codebase: updated titles, legends and overall presentation
+- Added a line filter toggle to the Duck Curve so individual curves can be viewed in isolation
+- Added KPI cards below the Duck Curve to reinforce the paradox data points with emphasis
+- Integrated a clock visualization to illustrate the 7-hour gap between solar peak and demand peak, adapted from an open source reference with modifications to fit the dashboard narrative
+- Implemented two gauge charts for The Common Mistake section to show self-sufficiency comparison between the unadvised and well-designed systems, inspired by a visualization seen in the professor's presentation
+- Added scroll-triggered animations to both the gauges and the clock visualization
+- Connected the comparison table originally created by Andrés to the real simulation data, removing hardcoded values
+- Implemented the battery State of Charge chart to show how each system arrives at peak demand hours with very different battery levels
+
+Notes / Issues:
+
+- The clock and gauge charts were adapted from external code references and required careful modifications to align with the dashboard's visual style and narrative
+- Inserting a new section between existing ones required reorganizing the HTML structure and the navbar
+
+AI Assistance:
+- Used AI to implement scroll-triggered animations for the gauge charts and the clock visualization
+- Used AI to help connect the comparison table data dynamically from the simulation JSON outputs
+- Used AI to implement animations for the battery SoC chart and Duck Curve chart
+
+Next Steps:
+- Continue building The Common Mistake section with the timeseries chart and the lollipop breakdown by household profile
+- Begin work on The Optimized Solution section
+
+Date: 2026-03-12
+Team: Team 3
+
+Member: Carlos Jiménez Zepeda
+
+Summary:
+Today I completed The Common Mistake section and fully implemented The Optimized Solution section, closing out the dashboard. The day covered a wide range of work including multi-metric timeseries charts, a lollipop breakdown by household profile, a scatter plot, bullet charts for cost and CO2 impact, equivalency KPI cards and the final narrative details including the closing quote and references.
+
+Work Completed:
+
+- Implemented a multi-metric timeseries chart with daily, weekly, monthly, quarterly and annual granularity, showing grid import, export, solar generated and load consumed across all households, based on an existing chart from Andrés that was significantly improved
+- Implemented a lollipop chart breaking down import, export, generated and consumed by household type and wealth level, with toggles for scenario and for total vs average per household, based on an existing chart that was heavily modified
+- Polished the scatter plot originally created by Andrés, removing hardcoded values and adding proper legends and labels
+- Completed The Common Mistake section with the above three charts
+- Retained the KPI cards in The Optimized Solution section originally created by Andrés, connecting them dynamically to the simulation JSON outputs
+- Implemented two bullet charts to clearly show net cost and CO2 emissions across the three scenarios, adapted from an external design reference with custom additions to handle the negative value range of the well-designed system
+- Researched CO2 equivalency conversion factors from academic and government sources (Nowak & Crane 2002, U.S. EPA 2024, SEMARNAT 2025) and implemented three equivalency KPI cards showing trees planted, km not driven and homes powered
+- Added a global Total / Per Household Average toggle to The Solution section affecting all four elements simultaneously
+- Wrote the closing inspirational quote and added the full APA reference block
+- Conducted a full narrative review of the dashboard, adjusting titles, subtitles and section flow for storytelling consistency
+
+Notes / Issues:
+
+- The bullet charts required special handling because the well-designed system produces negative net cost values, which meant the chart zones and animations had to account for bars growing in both directions from the break-even line
+- Selecting the right CO2 equivalency factors required cross-referencing multiple sources to ensure scientific accuracy
+
+AI Assistance:
+- Used AI to implement animations and fine-tune existing charts throughout the session
+- Used AI to handle the negative value logic in the bullet charts
+- Used AI to implement the global Total / Per Household Average toggle affecting KPI cards, bullet charts and equivalency cards simultaneously
+- Used AI to assist with the final narrative review, refining titles and subtitles across all sections
+
+Next Steps:
+- Martín to run full testing and optimizations across the dashboard
+- Write personal reflection on the project
