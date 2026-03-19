@@ -189,6 +189,10 @@
   <div id="batterySocChart" class="chart"></div>
   <p style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;">Hourly averages computed across all simulated days · Battery SoC at 18h marks the start of peak demand</p>
 
+  <!-- Hidden containers required by wireScenarioToggle / renderNoSolarDuck -->
+  <div id="duckCurve" style="display:none;"></div>
+  <span id="duck-source-note" style="display:none;"></span>
+
   <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">trending_down</span>Not a Bad Day. A Bad System.</h3>
   <p class="section-subtitle" style="margin-bottom:16px;">Day after day, week after week, month after month. The numbers change but the story does not. The unadvised system does not have bad days. It has a bad design.</p>
 
@@ -196,7 +200,7 @@
     <button class="metric-tab active" data-metric="import">Import</button>
     <button class="metric-tab" data-metric="export">Export</button>
     <button class="metric-tab" data-metric="generated">Generated</button>
-    <button class="metric-tab" data-metric="consumed">Consumed</button>
+    <button class="metric-tab" data-metric="load">Consumed</button>
   </div>
 
   <div class="time-filter" id="mistakeTimeFilter">
@@ -309,6 +313,12 @@
   <p>GreenGrid Simulation — COM 139 | Universidad Panamericana</p>
 </footer>
 
-<script src="main.js"></script>
+<!-- Load order matters: core → charts → data (data.js triggers fetch + initDashboard) -->
+<script src="core.js" defer></script>
+<script src="charts-duck.js" defer></script>
+<script src="charts-household.js" defer></script>
+<script src="charts-analysis.js" defer></script>
+<script src="data.js" defer></script>
+
 </body>
 </html>
