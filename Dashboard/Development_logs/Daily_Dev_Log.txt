@@ -269,3 +269,34 @@ AI Assistance:
 Next Steps:
 - Martín to run full testing and optimizations across the dashboard
 - Write personal reflection on the project
+
+Date: 2026-03-19
+Team: Team 3
+
+Member: Martín García Torres
+
+Summary: This day I optimized and refactor the Main.js of the project and make 5 new .js that are simple and easier to understand.
+
+Work completed:
+
+- Reading and understanding the Main.js and also de the index.html of the project
+- Separating the thigs that the Main did in sections
+- Create a separate code for each section, the main was fracture into 5 codes
+- Creating the chats-analysis.js
+- Creating the charts-duck.js
+- Creating the charts-household.js
+- Creating the data.js
+- Creating the core.js
+- Copy and paste the code from the Main to each individual part or section
+- Implement in the index the changes so the variables and data is collected from the new .js files
+- Start the refactor and optimization for each independent code
+- Delete the Main.js that is obsolete
+
+AI Assitance:
+- Used AI to get rid of the useless lines on the Main.js
+- Used AI to refactor and optimzed the separated codes
+- Used AI to fix some bugs and errors
+
+Next Steps:
+- Andres will update the style sheet so now it affects the new codes and grafics
+- Write the personal reflection
