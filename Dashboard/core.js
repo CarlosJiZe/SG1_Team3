@@ -79,3 +79,24 @@ function animatePath(path, delay) {
       path.attr("stroke-dashoffset",null)
     })
 }
+
+// ─── Back to Top Button ────────────────────────────────────────────────
+window.addEventListener("scroll", () => {
+  const btn = document.getElementById("backToTop")
+  if (!btn) return
+
+  if (window.scrollY > 300) {
+    btn.classList.add("show")
+  } else {
+    btn.classList.remove("show")
+  }
+})
+
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "backToTop") {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    })
+  }
+})

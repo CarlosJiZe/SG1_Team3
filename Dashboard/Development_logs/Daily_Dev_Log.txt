@@ -43,6 +43,7 @@ Next steps
 - Implement multi-household support with household types and wealth multipliers.
 - Build the data preparation module for neighborhood-level aggregation.
 
+
 Date: 2026-03-07
 Team: Team 3
 
@@ -84,7 +85,6 @@ Work completed
   undefined in D3. Unified all keys to match build_per_house() schema.
 - Bug #5: total_co2_avoided_kg was missing from by_wealth groups. Added.
 
-
 5) Dashboard template — local server test
 - Loaded the professor's provided Gapminder-style D3 template in the browser
   using python3 -m http.server 8080 to confirm the local server setup works
@@ -109,6 +109,7 @@ Used Claude for code review and debugging throughout the session:
 
 Next steps
 - Andrés to design in the dashboard based on the PDF.
+
 
 Date: 2026-03-08
 Team: Team 3
@@ -139,6 +140,7 @@ Next Steps:
 - Implement the remaining required charts (energy export, battery usage, production vs consumption over time)
 - Add scenario toggles and time filters for interactive data exploration
 
+
 Date: 2026-03-09
 Team: Team 3
 
@@ -167,6 +169,7 @@ AI Assistance:
 Next Steps:
 - Begin implementing the D3 visualizations using the now-connected real simulation data
 - Coordinate with Andrés on which charts to prioritize
+
 
 Date: 2026-03-10
 Team: Team 3
@@ -199,6 +202,7 @@ AI Assistance:
 Next Steps:
 - Continue building the remaining sections following the defined narrative structure
 - Begin work on The Paradox section featuring the Duck Curve
+
 
 Date: 2026-03-11
 Team: Team 3
@@ -233,6 +237,7 @@ AI Assistance:
 Next Steps:
 - Continue building The Common Mistake section with the timeseries chart and the lollipop breakdown by household profile
 - Begin work on The Optimized Solution section
+
 
 Date: 2026-03-12
 Team: Team 3
@@ -270,6 +275,7 @@ Next Steps:
 - Martín to run full testing and optimizations across the dashboard
 - Write personal reflection on the project
 
+
 Date: 2026-03-19
 Team: Team 3
 
@@ -300,3 +306,26 @@ AI Assitance:
 Next Steps:
 - Andres will update the style sheet so now it affects the new codes and grafics
 - Write the personal reflection
+
+
+Date: 2026-04-02
+Team: Team 3
+
+Member: Andrés González Gómez
+
+Summary: During this development session, I focused on minor visual improvements and CSS cleanup for the GreenGrid Dashboard.
+
+Work completed:
+
+- Refining the overall page spacing and section layout
+- Improving the visual separation between sections
+- Making the Simulation Overview cards larger and more prominent
+- Adjusting some responsive spacing and chart container sizing
+- Fixing small footer alignment / layout issues
+- Cleaning and optimizing parts of the style.css file to keep the structure more organized and maintainable
+
+AI Assistance:
+- Used AI to omptimize de style.css into more organized sections
+
+Notes: 
+These changes did not modify the dashboard’s functionality, but they helped improve the overall presentation, readability, and user experience.
