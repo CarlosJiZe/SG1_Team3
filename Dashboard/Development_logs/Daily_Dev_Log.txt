@@ -329,3 +329,23 @@ AI Assistance:
 
 Notes: 
 These changes did not modify the dashboard’s functionality, but they helped improve the overall presentation, readability, and user experience.
+
+Date: 2026-04-06
+Team: Team 3
+
+Member: Martín García Torres
+
+Summary: Update the README.md file
+
+Work Completed:
+
+- Adding the neighborhood scalling to the README
+- Add more data and explain how the new main.py works
+- Delete all the extra info that doesnt work anymore or has changes
+- Restructure the README file
+- Add a section for the simulation and a section for the web page
+- Explain how the index.html works and how to deploy it
+
+AI Assitance:
+- Organize and restructure the new README file
+- Add the sections to the README

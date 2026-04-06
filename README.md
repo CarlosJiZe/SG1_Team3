@@ -1,8 +1,8 @@
-# GrimGridSim_Team_3
+# GreenGrid Simulation — Team 3
 
-A comprehensive energy management simulation system for solar-powered microgrids with battery storage. This digital twin simulates real-world energy dynamics, financial performance, and reliability metrics for residential or commercial solar installations.
+A comprehensive energy management simulation system for solar-powered microgrids with battery storage. This digital twin simulates real-world energy dynamics, financial performance, and reliability metrics for residential solar installations — and presents the results through an interactive web dashboard.
 
-**Project:** Phase 1 - Simulation & Data Generation  
+**Project:** Phase 1 - Simulation & Data Generation / Phase 2 - Visualization  
 **Course:** COM 139 - Simulation & Visualization  
 **Institution:** Universidad Panamericana, Guadalajara  
 **Team:** Team 3
@@ -11,40 +11,48 @@ A comprehensive energy management simulation system for solar-powered microgrids
 
 ## 📋 Table of Contents
 
-- [Features](#-features)
-- [Quick Start](#-quick-start)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
-- [Project Structure](#-project-structure)
-- [Output Files](#-output-files)
-- [Advanced Usage](#-advanced-usage)
-- [Troubleshooting](#-troubleshooting)
-- [Future Phases](#-future-phases)
+- [Part 1 — Python Simulation (main.py)](#-part-1--python-simulation-mainpy)
+  - [Features](#-features)
+  - [Quick Start](#-quick-start)
+  - [Installation](#-installation)
+  - [Configuration](#-configuration)
+  - [Usage](#-usage)
+  - [Project Structure](#-project-structure)
+  - [Output Files](#-output-files)
+  - [Advanced Usage](#-advanced-usage)
+  - [Troubleshooting](#-troubleshooting)
+
+
+  - [Part 2 — Web Dashboard (index.html)](#-part-2--web-dashboard-indexhtml)
+    - [Dashboard Overview](#-dashboard-overview)
+    - [Sections & Visualizations](#-sections--visualizations)
+    - [How to Run the Dashboard](#-how-to-run-the-dashboard)
+    - [Script Load Order](#-script-load-order)
+  - [Future Phases](#-future-phases)
+  - [Authors](#-authors)
 
 ---
+
+# Part 1 — Python Simulation (`main.py`)
 
 ## ✨ Features
 
 ### Core Simulation
-- **Real-time energy flow modeling**: Solar generation, battery storage, load consumption, and grid interaction
-- **Multiple energy management strategies**: LOAD_PRIORITY, CHARGE_PRIORITY, PRODUCE_PRIORITY
-- **Seasonal variations**: Realistic cloud coverage and daylight patterns for spring, summer, fall, and winter
-- **Reliability simulation**: Inverter failures with configurable rates and durations
-- **Financial modeling**: Import costs, export revenues, and ROI calculations
+- **Neighborhood Scaling**: Supports simulating a single household or an entire neighborhood of 24+ households.
+- **Real-time energy flow modeling**: Solar generation, battery storage, load consumption, and grid interaction.
+- **Multiple energy management strategies**: `LOAD_PRIORITY`, `CHARGE_PRIORITY`, `PRODUCE_PRIORITY`.
+- **Reliability & Environment**: Realistic seasonal variations and inverter failure simulations.
 
 ### Advanced Features
-- **Strategy comparison tool**: Automatically compare all three energy management strategies
-- **Seasonal comparison**: Evaluate system performance across all four seasons
-- **Scalable system sizing**: Configure multiple batteries, solar arrays, and inverters
-- **Reproducible results**: Optional random seed for consistent testing
-- **Comprehensive data export**: CSV, JSON, and text report formats
+- **Strategy comparison tool**: Automatically compare all three energy management strategies.
+- **Seasonal comparison**: Evaluate system performance across all four seasons.
+- **Scalable system sizing**: Configure multiple batteries, solar arrays, and inverters.
+- **Reproducible results**: Optional random seed for consistent testing.
+- **Comprehensive data export**: CSV, JSON, and text report formats.
 
 ---
 
 ## 🚀 Quick Start
-
-### For Impatient Users (3 Steps)
 
 ```bash
 # 1. Clone the repository
@@ -58,7 +66,7 @@ python3 main.py
 cat results/answers.txt
 ```
 
-That's it! The simulation will run with default settings and generate results in the `results/` folder.
+The simulation will run with default settings and generate results in the `results/` folder.
 
 ---
 
@@ -67,7 +75,7 @@ That's it! The simulation will run with default settings and generate results in
 ### Prerequisites
 
 - **Python 3.8 or higher** (3.9+ recommended)
-- No external libraries required! Uses only Python standard library
+- No external libraries required — uses only the Python standard library.
 
 ### Verify Python Version
 
@@ -94,11 +102,7 @@ python3 main.py
 
 ## ⚙️ Configuration
 
-### Configuration Files
-
-The simulation uses `config.json` in the `simulator` file for all settings. A template with detailed explanations is provided in `config_template.json`.
-
-### Quick Configuration
+The simulation uses `config.json` in the project root for all settings. A template with detailed explanations is provided in `config_template.json`.
 
 **Option 1: Use the provided config.json** (recommended for first run)
 ```bash
@@ -108,13 +112,12 @@ python3 main.py
 
 **Option 2: Customize your configuration**
 ```bash
-# Copy the template
-cp config_template.json config.json
-
-# Edit with your preferred editor
-nano config.json
-# or
-vim config.json
+  # Copy the template
+  cp config_template.json config.json
+  # Edit with your preferred editor
+  nano config.json
+  # or
+  vim config.json
 ```
 
 ### Key Configuration Parameters
@@ -123,11 +126,11 @@ vim config.json
 ```json
 {
   "simulation": {
-    "duration_days": 30,           // Simulation length (30 days = 1 month)
-    "time_step_minutes": 60,       // Time resolution (15, 30, or 60)
-    "start_date": "2024-06-01",    // Starting date (affects sun angle)
-    "season": "summer",            // Season: spring, summer, fall, winter
-    "random_seed": 519425893       // For reproducible results (or null)
+    "duration_days": 30, // Simulation length (30 days = 1 month)
+    "time_step_minutes": 60, // Time resolution (15, 30, or 60)
+    "start_date": "2024-06-01", // Starting date (affects sun angle)
+    "season": "summer", // Season: spring, summer, fall, winter
+    "random_seed": 519425893 // For reproducible results (or null)
   }
 }
 ```
@@ -136,7 +139,7 @@ vim config.json
 ```json
 {
   "battery": {
-    "unit_capacity_kwh": 13.5,     // Capacity per battery (13.5 = Tesla Powerwall)
+    "unit_capacity_kwh": 13.5,// Capacity per battery (13.5 = Tesla Powerwall)
     "count": 1,                    // Number of batteries
     "efficiency": 0.9,             // Round-trip efficiency (90%)
     "min_soc": 0.05               // Minimum charge level (5%)
@@ -157,27 +160,27 @@ vim config.json
 ```json
 {
   "energy_management": {
-    "strategy": "LOAD_PRIORITY"    // LOAD_PRIORITY, CHARGE_PRIORITY, or PRODUCE_PRIORITY
+    "strategy": "LOAD_PRIORITY" // LOAD_PRIORITY, CHARGE_PRIORITY, or PRODUCE_PRIORITY
   }
-}
+  }
 ```
 
-### Energy Management Strategies Explained
+### Energy Management Strategies
 
 | Strategy | Priority Order | Best For |
-|----------|---------------|----------|
+|----------|----------------|----------|
 | **LOAD_PRIORITY** | 1. Load → 2. Battery → 3. Grid Export | Maximizing self-consumption |
 | **CHARGE_PRIORITY** | 1. Battery → 2. Load → 3. Grid Export | Backup power / time-of-use rates |
 | **PRODUCE_PRIORITY** | 1. Grid Export → 2. Load → 3. Battery | Revenue maximization |
 
 ### Example Configurations
 
-#### Small Residential (Current Default)
+#### Small Residential (Default)
 ```json
 {
   "battery": {"count": 1, "unit_capacity_kwh": 13.5},
-  "solar": {"count": 1, "unit_peak_power_kw": 5.0},
-  "inverter": {"count": 1, "unit_max_output_kw": 4.0}
+  "solar":   {"count": 1, "unit_peak_power_kw": 5.0},
+  "inverter":{"count": 1, "unit_max_output_kw": 4.0}
 }
 ```
 
@@ -185,8 +188,8 @@ vim config.json
 ```json
 {
   "battery": {"count": 2, "unit_capacity_kwh": 13.5},
-  "solar": {"count": 3, "unit_peak_power_kw": 5.0},
-  "inverter": {"count": 2, "unit_max_output_kw": 4.0}
+  "solar":   {"count": 3, "unit_peak_power_kw": 5.0},
+  "inverter":{"count": 2, "unit_max_output_kw": 4.0}
 }
 ```
 
@@ -194,8 +197,8 @@ vim config.json
 ```json
 {
   "battery": {"count": 4, "unit_capacity_kwh": 13.5},
-  "solar": {"count": 3, "unit_peak_power_kw": 10.0},
-  "inverter": {"count": 2, "unit_max_output_kw": 10.0}
+  "solar":   {"count": 3, "unit_peak_power_kw": 10.0},
+  "inverter":{"count": 2, "unit_max_output_kw": 10.0}
 }
 ```
 
@@ -203,59 +206,27 @@ vim config.json
 
 ## 🎯 Usage
 
-### Basic Simulation
+### Simulation Modes
 
-Run a single simulation with your current configuration:
+When you run `python3 main.py`, you will be prompted to select a mode:
 
-```bash
-python3 main.py
+```
+SELECT MODE:
+  1. Single household (config.json)
+  2. Neighborhood     (neighborhood_config.json)
 ```
 
-**What happens:**
-1. Loads configuration from `config.json`
-2. Displays system parameters
-3. Prompts for confirmation
-4. Runs the simulation
-5. Displays results summary
-6. Saves detailed data to `results/` folder
+**Mode 1 — Single Household**: Loads `config.json`, displays system parameters, runs the simulation, prints a results summary, and saves output files to `results/`.
 
-**Expected Output:**
-```
-======================================================================
-   ___                  ___     _     _   ___ _          
-  / __|_ _ ___ ___ _ _ / __|_ _(_)__| | / __(_)_ __     
- | (_ | '_/ -_) -_) ' \ (_ | '_| / _` | \__ \ | '  \    
-  \___|_| \___\___|_||_\___|_| |_\__,_| |___/_|_|_|_|   
-
-          Digital Twin Simulation - Phase 1
-======================================================================
-
-📋 SIMULATION CONFIGURATION:
-  Duration: 30 days
-  Season: summer
-  Strategy: LOAD_PRIORITY
-  ...
-
-▶ Press ENTER to start simulation (or Ctrl+C to cancel):
-```
+**Mode 2 — Neighborhood**: Loads `neighborhood_config.json` and simulates all 24+ households in the configured neighborhood.
 
 ### Strategy & Season Comparison
-
-Compare all strategies and seasons in one run:
 
 ```bash
 python3 compare_strategies.py
 ```
 
-**What happens:**
-1. Runs 7 total simulations:
-   - 3 strategy comparisons (LOAD, CHARGE, PRODUCE)
-   - 4 seasonal comparisons (spring, summer, fall, winter)
-2. Uses the same random seed for fair comparison
-3. Generates comprehensive comparison report
-4. Saves to `results/comparison_report_TIMESTAMP.txt`
-
-**Duration:** Approximately 3-5 minutes on modern hardware
+Runs 7 total simulations (3 strategies + 4 seasons) using the same random seed for fair comparison and saves a comprehensive report to `results/comparison_report_TIMESTAMP.txt`.
 
 ---
 
@@ -268,22 +239,25 @@ greengrid-simulation/
 ├── compare_strategies.py        # Strategy/season comparison tool
 ├── config.json                  # Active configuration (edit this)
 ├── config_template.json         # Configuration template with help
+├── neighborhood_config.json     # Neighborhood simulation config
 │
 ├── src/                         # Source code modules
 │   ├── Simulation.py            # Main simulation engine
+│   ├── HouseholdSimulation.py   # Neighborhood simulation engine
 │   ├── DataLogger.py            # Data export and logging
 │   ├── SolarPanel.py            # Solar generation model
 │   ├── Battery.py               # Battery storage model
 │   ├── Inverter.py              # Inverter with failure simulation
 │   ├── EnergyManager.py         # Energy management strategies
-│   └── ...                      # Other components
+│   └── ...
 │
-├── results/                     # Generated output files (created on first run)
-│   ├── hourly_data_TIMESTAMP.csv       # Detailed time-series data
-│   ├── summary_TIMESTAMP.json          # JSON summary
-│   ├── answers_TIMESTAMP.txt           # Project Q&A answers
-│   └── comparison_report_TIMESTAMP.txt # Strategy comparison report
+├── results/                     # Generated output files (auto-created)
+│   ├── hourly_data_TIMESTAMP.csv
+│   ├── summary_TIMESTAMP.json
+│   ├── answers_TIMESTAMP.txt
+│   └── comparison_report_TIMESTAMP.txt
 │
+├── index.html                   # Web dashboard (Phase 2)
 └── README.md                    # This file
 ```
 
@@ -291,69 +265,38 @@ greengrid-simulation/
 
 ## 📊 Output Files
 
-After running the simulation, you'll find these files in the `results/` folder:
-
 ### 1. `hourly_data_YYYYMMDD_HHMMSS.csv`
-Detailed time-series data for every simulation hour.
+Detailed time-series data for every simulation step.
 
-**Columns:**
-- `timestamp`: Date and time
-- `solar_generated_kw`: Solar power output (kW)
-- `load_consumed_kw`: Power consumed by load (kW)
-- `battery_soc_percent`: Battery charge level (%)
-- `grid_import_kw`, `grid_export_kw`: Grid interaction (kW)
-- `cloud_coverage`, `inverter_operational`: Environmental & reliability data
-- And more...
+**Key columns:** `timestamp`, `solar_generated_kw`, `load_consumed_kw`, `battery_soc_percent`, `grid_import_kw`, `grid_export_kw`, `cloud_coverage`, `inverter_operational`.
 
-**Use case:** Time-series analysis, detailed debugging, visualization (Phase 2)
+**Use case:** Time-series analysis, visualization, debugging.
 
 ### 2. `summary_YYYYMMDD_HHMMSS.json`
-High-level summary of simulation results in JSON format.
+High-level results in JSON format.
 
-**Contains:**
 ```json
 {
   "summary": {
     "total_solar_generated_kwh": 1234.56,
-    "total_load_consumed_kwh": 987.65,
-    "self_sufficiency_percent": 65.4,
-    ...
+    "self_sufficiency_percent": 65.4
   },
   "financial": {
     "total_import_cost": 12.34,
-    "total_export_revenue": 23.45,
-    "net_cost": -11.11,
-    ...
+    "net_cost": -11.11
   },
-  "battery": { ... },
-  "reliability": { ... }
+  "battery": { "..." : "..." },
+  "reliability": { "..." : "..." }
 }
 ```
 
-**Use case:** Quick overview, API integration, dashboard data
+**Use case:** Quick overview, dashboard data source.
 
 ### 3. `answers_YYYYMMDD_HHMMSS.txt`
-Comprehensive report answering all project questions.
-
-**Sections:**
-- System configuration summary
-- Financial analysis
-- Performance metrics
-- Strategy evaluation
-- Recommendations
-
-**Use case:** Project documentation, presentations, reports
+Comprehensive report with financial analysis, performance metrics, strategy evaluation, and recommendations.
 
 ### 4. `comparison_report_YYYYMMDD_HHMMSS.txt`
-Generated by `compare_strategies.py` - compares strategies and seasons.
-
-**Contains:**
-- Strategy comparison table
-- Best/worst strategy analysis
-- Seasonal performance comparison
-- System sizing recommendations
-
-**Use case:** Strategy selection, seasonal planning, system optimization
+Generated by `compare_strategies.py` — includes strategy comparison tables, seasonal performance, and system sizing recommendations.
 
 ---
 
@@ -361,9 +304,6 @@ Generated by `compare_strategies.py` - compares strategies and seasons.
 
 ### Reproducible Simulations
 
-To get identical results every time (useful for debugging or comparisons):
-
-1. Set a random seed in `config.json`:
 ```json
 {
   "simulation": {
@@ -372,277 +312,252 @@ To get identical results every time (useful for debugging or comparisons):
 }
 ```
 
-2. Run the simulation - results will be identical every time
-
-**When to use:**
-- ✅ Comparing different configurations
-- ✅ Debugging issues
-- ✅ Reproducible research
-- ❌ General testing (use `null` for variety)
+Use a fixed seed when comparing configurations or debugging. Set to `null` for random behavior.
 
 ### Customizing Load Patterns
-
-Edit the load profile in `config.json`:
 
 ```json
 {
   "load": {
-    "base_load_kw": 0.5,          // 24/7 background load (fridge, router)
-    "peak_hours_max_kw": 3.0,     // Evening peak load (cooking, AC)
-    "peak_hours_start": 18,       // 6:00 PM using the 24hrs format
-    "peak_hours_end": 21          // 9:00 PM using the 24hrs format
+    "base_load_kw": 0.5,
+    "peak_hours_max_kw": 3.0,
+    "peak_hours_start": 18,
+    "peak_hours_end": 21
   }
 }
 ```
 
-**Tip:** Model your actual home by:
-1. Check your monthly kWh consumption
-2. Divide by ~720 hours/month for average kW
-3. Set `base_load_kw` to 60-70% of average
-4. Set `peak_hours_max_kw` to 2-3x average
-
-### Fine-tuning Time Resolution
-
-More detailed analysis? Change the time step:
+### Time Resolution
 
 ```json
 {
   "simulation": {
-    "time_step_minutes": 15    // 15, 30, or 60 minutes
+    "time_step_minutes": 15
   }
 }
 ```
 
-**Trade-offs:**
-- 15 minutes = More detailed (4x data) but slower
-- 60 minutes = Faster, less detailed (default)
+15 min = more detailed (4× data), 60 min = faster (default).
 
-### Grid Configuration
-
-Customize grid interaction:
+### Grid Rates
 
 ```json
 {
   "grid": {
-    "import_cost_per_kwh": 0.0075,    // $0.0075/kWh = 0.75 USD cents 
-    "export_revenue_per_kwh": 0.009,  // $0.009/kWh = 0.9 USD cents
-    "export_limit_kw": 20.0           // Maximum export capacity
+    "import_cost_per_kwh": 0.0075,
+    "export_revenue_per_kwh": 0.009,
+    "export_limit_kw": 20.0
   }
 }
 ```
-
-**Real-world mapping:**
-- US typical: import ~$0.12/kWh, export ~$0.03/kWh
-- Mexico CFE: import ~MXN 2.5/kWh (~$0.15), limited export programs
-- Adjust to match your local utility rates
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+**`FileNotFoundError: config.json`** — Copy the template: `cp config_template.json config.json`
 
-#### `FileNotFoundError: config.json`
+**`ModuleNotFoundError: No module named 'src'`** — Make sure you are running from the project root directory: `cd greengrid-simulation && python3 main.py`
 
-**Problem:** Configuration file is missing
+**No `results/` folder** — Create it manually: `mkdir -p results`
 
-**Solution:**
-```bash
-# Copy the template
-cp config_template.json config.json
-```
+**Low self-sufficiency (<20%)** — Increase `battery.count` or `solar.count`, or reduce `load.peak_hours_max_kw`.
 
-#### `ModuleNotFoundError: No module named 'src'`
+**Results vary wildly between runs** — Set a fixed `random_seed` in `config.json`.
 
-**Problem:** Python can't find the source modules
+---
 
-**Solutions:**
-1. Make sure you're in the project root directory:
+# 🌐 Part 2 — Web Dashboard (`index.html`)
+
+## 📌 Dashboard Overview
+
+`index.html` is the Phase 2 visualization layer of GreenGrid. It is a standalone, single-page web dashboard built with **D3.js v7** that reads the simulation output and presents the results as an interactive data story structured in three acts: the problem, the paradox, and the solution.
+
+**Dependencies (loaded via CDN — no install needed):**
+- [D3.js v7](https://d3js.org/) — all chart rendering
+- Google Fonts: Poppins
+- Google Material Icons
+
+**External scripts (must be in the same folder as `index.html`):**
+
+| File | Purpose |
+|------|---------|
+| `core.js` | Shared utilities and layout helpers |
+| `charts-duck.js` | Duck Curve chart (paradox section) |
+| `charts-household.js` | Household-level KPI and wealth charts |
+| `charts-analysis.js` | Energy balance, scatter, bullet charts |
+| `data.js` | Fetches simulation data and calls `initDashboard()` |
+| `style.css` | All dashboard styles |
+
+---
+
+## 🗂 Sections & Visualizations
+
+### Navbar & Hero
+Fixed top navigation with anchor links to each act. Hero header displays the dashboard title and tagline.
+
+---
+
+### Simulation Overview
+Three stat cards showing the scope of the simulation: 24 households, 360 days, 3 energy scenarios.
+
+---
+
+### Act 1 — The Problem (`#problem`)
+
+Establishes the baseline cost of grid dependency for all household types.
+
+**KPI Cards** — Aggregated neighborhood totals over 360 days:
+- Annual grid cost
+- CO₂ emissions (kg)
+- Self-sufficiency (%)
+
+**Cost by Household Type** (`#costByType`) — Bar chart showing annual grid cost broken down by household type (Studio, Small, Medium, Large Family, etc.).
+
+**Wealth Lollipop Chart** (`#wealthLollipop`) — Lollipop chart mapping wealth levels to consumption multipliers and grid bills. Illustrates that higher wealth = higher consumption, but solar changes this equation for everyone.
+
+> Grid rate: $0.0075/kWh · CO₂ factor: 0.444 kg/kWh (CFE Mexico)
+
+---
+
+### Act 1.5 — The Paradox (`#paradox`)
+
+Explores the Duck Curve and the mismatch between solar generation and household demand.
+
+**Duck Curve Chart** (`#paradoxDuckCurve`) — Average hourly power (kW) across all simulated days. Togglable between three scenarios:
+- `No Solar` — pure grid dependency profile
+- `Bad Design` — solar installed without storage or strategy
+- `Optimized` — well-designed system with battery and management
+
+**Paradox KPI Cards:**
+- Peak solar hour
+- Average peak solar output
+- Evening demand peak
+- Ramp rate between solar drop and demand peak
+- Grid import cost during peak hours
+- Curtailed energy from bad design
+
+---
+
+### Act 2 — The Mistake (`#mistake`)
+
+Diagnoses what goes wrong when solar is installed without proper design.
+
+**Time-Series Chart** (`#mistakeTimeseries`) — Neighborhood energy flows over time (import, export, generated, consumed), with time-filter buttons for Day / Week / Month / Quarter / Year.
+
+**Energy Balance Grouped Bar Chart** (`#energyBalance`) — Generation, consumption, imports, and exports broken down by household type or wealth level, switchable between the `Well Designed` and `Unadvised` scenarios, in either Totals or Averages view.
+
+**Household Scatter Plot** (`#houseScatter`) — Each dot is one household. Points above the break-even line are still net consumers of grid energy despite having solar panels. Filterable by scenario.
+
+---
+
+### Act 3 — The Solution (`#solution`)
+
+Shows the measurable impact of a properly designed solar + storage system.
+
+**Impact Cards:**
+- Annual savings vs. no solar
+- CO₂ avoided (kg)
+- Energy self-sufficiency (%)
+
+Toggle between **Neighborhood Total** and **Per Household Average** views.
+
+**Net Cost Bullet Chart** (`#bulletChart`) — Compares net annual cost across all three scenarios against the break-even line. Only the optimized system crosses into profit.
+
+**CO₂ Bullet Chart** (`#co2BulletChart`) — Carbon emissions comparison. The optimized system goes net-negative, exporting clean energy that displaces grid generation.
+
+**CO₂ Equivalencies** (`#co2Equivalencies`) — Translates avoided emissions into relatable equivalents (trees planted, car km avoided, homes powered) using EPA and SEMARNAT reference factors.
+
+> References: Nowak & Crane (2002), U.S. EPA Greenhouse Gas Equivalencies Calculator, SEMARNAT Factor de Emisión del SEN 2024.
+
+---
+
+## ▶️ How to Run the Dashboard
+
+The dashboard reads local data files, so it must be served over HTTP (not opened directly as a `file://` URL).
+
+**Option 1 — Python (simplest):**
 ```bash
 cd greengrid-simulation
-python3 main.py
+python3 -m http.server 8080
+# Open http://localhost:8080/index.html
 ```
 
-2. Verify the `src/` folder exists and contains Python files
+**Option 2 — VS Code Live Server:**
+Install the [Live Server extension](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer), right-click `index.html`, and select **Open with Live Server**.
 
-#### Simulation runs but no results folder
-
-**Problem:** Permissions issue or disk space
-
-**Solution:**
+**Option 3 — Node.js:**
 ```bash
-# Manually create results folder
-mkdir -p results
-
-# Check disk space
-df -h .
-```
-
-#### Very low self-sufficiency (<20%)
-
-**Problem:** System is undersized for the load
-
-**Solutions:**
-1. Increase battery capacity:
-```json
-{"battery": {"count": 2}}  // Double the battery
-```
-
-2. Increase solar generation:
-```json
-{"solar": {"count": 2}}    // Double the panels
-```
-
-3. Or reduce load:
-```json
-{
-  "load": {
-    "base_load_kw": 0.3,      // Reduce from 0.5
-    "peak_hours_max_kw": 2.0  // Reduce from 3.0
-  }
-}
-```
-
-#### Results vary wildly between runs
-
-**Problem:** Random seed is not set
-
-**Solution:**
-```json
-{
-  "simulation": {
-    "random_seed": 123456789   // Set any integer
-  }
-}
+npx serve .
+# Open the URL shown in the terminal
 ```
 
 ---
 
-## 🔮 Future Phases
+## 🔗 Script Load Order
 
-This is **Phase 1** of a three-phase project:
+The scripts must load in this exact order (already set in `index.html`):
 
-### Phase 2: Visualization (Next)
-- Interactive dashboards with real-time data
-- Time-series plots (energy flow, battery state, costs)
-- Geographical heat maps
-- Strategy comparison charts
-- 3D visualizations
+```html
+<script src="core.js" defer></script>
+<script src="charts-duck.js" defer></script>
+<script src="charts-household.js" defer></script>
+<script src="charts-analysis.js" defer></script>
+<script src="data.js" defer></script>
+```
+
+`data.js` runs last because it fetches the simulation output and calls `initDashboard()`, which triggers all chart-rendering functions defined in the earlier scripts.
+
+---
+
+# 🔮 Future Phases
 
 ### Phase 3: Machine Learning
 - Predictive models for energy generation
 - Load forecasting algorithms
 - Anomaly detection for system failures
-- Optimization recommendations
 - Reinforcement learning for strategy selection
 
-
 ---
 
-## 📝 Configuration Tips
+## 📚 Understanding the Metrics
 
-### For Maximum Self-Sufficiency
-```json
-{
-  "battery": {"count": 3, "unit_capacity_kwh": 13.5},  // 40.5 kWh total
-  "solar": {"count": 4, "unit_peak_power_kw": 5.0},    // 20 kW peak
-  "energy_management": {"strategy": "LOAD_PRIORITY"}
-}
-```
+**Self-Sufficiency (%)** — Percentage of load met by solar + battery without grid import. 100% = fully off-grid capable; 50–70% = typical residential system; <30% = undersized.
 
-### For Maximum Export Revenue
-```json
-{
-  "solar": {"count": 5, "unit_peak_power_kw": 5.0},     // 25 kW peak
-  "battery": {"count": 1, "unit_capacity_kwh": 13.5},   // Minimal battery
-  "energy_management": {"strategy": "PRODUCE_PRIORITY"}
-}
-```
+**Net Cost ($)** — Import cost minus export revenue. Negative = system earns money; positive = still paying the grid.
 
-### For Backup Power Resilience
-```json
-{
-  "battery": {"count": 4, "unit_capacity_kwh": 13.5},   // 54 kWh total
-  "battery": {"min_soc": 0.20},                         // Keep 20% reserve
-  "energy_management": {"strategy": "CHARGE_PRIORITY"}
-}
-```
+**Average Battery SoC (%)** — 70–80% = healthy system; 40–60% = battery could be larger; >90% = battery may be oversized.
 
-### For Testing Edge Cases
-```json
-{
-  "simulation": {"duration_days": 90},               // Full season
-  "inverter": {"failure_rate": 0.02},                // 2% failure (high)
-  "simulation": {"time_step_minutes": 15},           // High resolution
-  "load": {"peak_hours_max_kw": 5.0}                 // High demand
-}
-```
-
----
-
-## 📚 Additional Resources
-
-### Understanding the Metrics
-
-**Self-Sufficiency (%)**: Percentage of load met by solar + battery (without grid import)
-- 100% = Fully off-grid capable
-- 50-70% = Typical residential solar system
-- <30% = Undersized system
-
-**Net Cost ($)**: Import cost minus export revenue
-- Negative = System is profitable (exporting more than importing)
-- Positive = System costs money (importing more than exporting)
-- Goal: Minimize this value
-
-**Average Battery SoC (%)**: Average battery charge level
-- 70-80% = Healthy, well-sized system
-- 40-60% = Battery could be larger
-- >90% = Battery may be oversized
-
-**Curtailed Energy (kWh)**: Wasted solar energy that couldn't be used
-- Reasons: Battery full, load satisfied, export limit reached
-- High curtailment = Consider larger battery or increasing load
+**Curtailed Energy (kWh)** — Solar energy wasted because the battery was full, load was satisfied, and the export limit was reached. High curtailment = consider a larger battery.
 
 ---
 
 ## 🤝 Contributing
 
-This is an academic project, but suggestions are welcome!
+This is an academic project, but suggestions are welcome.
 
-**Found a bug?**
-1. Note the exact error message
-2. Share your `config.json` file
-3. Describe steps to reproduce
+**Found a bug?** Note the exact error, share your `config.json`, and describe how to reproduce it.
 
-**Have an improvement idea?**
-1. Describe the feature
-2. Explain the use case
-3. Suggest implementation approach
+**Have an improvement idea?** Describe the feature, the use case, and a suggested implementation approach.
 
 ---
 
 ## 📄 License
 
-You can read it in the LICENSE file
+See the `LICENSE` file for details.
 
 ---
 
 ## 🎓 Authors
 
-Team 3 - GreenGrid Project  
-Course: Simulation & Visualization  
-Institution: Universidad Panamericana, Guadalajara
-Carlos Jimenez Zepeda
-Andres Gonzalez Gomez
-Martin Garcia Torres
+Team 3 — GreenGrid Project  
+Course: COM 139 Simulation & Visualization  
+Universidad Panamericana, Guadalajara
+
+- Carlos Jimenez Zepeda  
+- Andres Gonzalez Gomez  
+- Martin Garcia Torres
 
 ---
-
-## 🙋 Need Help?
-
-1. **Check this README** - Most questions are answered here
-2. **Review `config_template.json`** - Has detailed parameter explanations
-3. **Run with default config** - Use provided `config.json` for guaranteed working setup
-4. **Check the Troubleshooting section** - Common issues and solutions
 
 **Happy Simulating! 🌱⚡**
