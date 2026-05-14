@@ -4,37 +4,142 @@
 //  NOTE: load this LAST so all chart functions are available
 // ============================================================
 
-Promise.all([
-  fetch("data/duck_curve.json").then(r => r.json()),
-  fetch("data/per_house.json").then(r => r.json()),
-  fetch("data/overview.json").then(r => r.json()),
-  fetch("data/by_group.json").then(r => r.json()),
-  fetch("data/timeseries.json").then(r => r.json())
-]).then(([duckData,houseData,overviewData,groupData,timeData])=>{
-  state.allData = {duckData,houseData,overviewData,groupData,timeData}
-  setTimeout(()=>{
-    populateKPIs()
-    populateSimOverview()
-    populateComparisonTable()
-    populateImpactCards()
-    initCostByType()
-    initWealthChart()
-    initParadoxDuck()
-    initParadoxClock()
-    initDuckCurve()
-    initSelfSufficiencyGauges()
-    initBatterySocChart()
-    initMistakeTimeseries()
-    initHouseScatter()
-    initByGroupChart()
-    initBulletChart()
-    initCo2BulletChart()
-    initCo2Equivalencies()
-    wireScenarioToggle()
-    wireTimeBtns()
-    wireSolutionModeToggle()
-  }, 100)
-}).catch(err=>console.error("Error loading dashboard data:",err))
+// ─── Clear all D3 charts before reloading ───────────────────────────────────
+function clearAllCharts() {
+  document.querySelectorAll(".chart svg, .chart canvas").forEach(el => el.remove())
+  ;["costByType","wealthLollipop","bulletChart","co2BulletChart",
+    "paradoxDuck","paradoxClock","duckCurveChart","selfSufficiencyGauges",
+    "batterySocChart","mistakeTimeseries","houseScatter","byGroupChart","energyBalance"
+  ].forEach(id => {
+    const el = document.getElementById(id)
+    if (el) el.querySelectorAll("svg").forEach(s => s.remove())
+  })
+  const tbody = document.querySelector("#comparison-tbody")
+  if (tbody) tbody.innerHTML = ""
+  const co2 = document.querySelector("#co2Equivalencies")
+  if (co2) co2.innerHTML = ""
+}
+
+// ─── Central data loader ────────────────────────────────────────────────────
+function loadData(folder) {
+  Promise.all([
+    fetch(`${folder}/duck_curve.json`).then(r => r.json()),
+    fetch(`${folder}/per_house.json`).then(r => r.json()),
+    fetch(`${folder}/overview.json`).then(r => r.json()),
+    fetch(`${folder}/by_group.json`).then(r => r.json()),
+    fetch(`${folder}/timeseries.json`).then(r => r.json())
+  ]).then(([duckData,houseData,overviewData,groupData,timeData]) => {
+    state.allData = {duckData,houseData,overviewData,groupData,timeData}
+    setTimeout(() => {
+      populateKPIs()
+      populateSimOverview()
+      populateComparisonTable()
+      populateImpactCards()
+      initCostByType()
+      initWealthChart()
+      initParadoxDuck()
+      initParadoxClock()
+      initDuckCurve()
+      initSelfSufficiencyGauges()
+      initBatterySocChart()
+      initMistakeTimeseries()
+      initHouseScatter()
+      initByGroupChart()
+      initBulletChart()
+      initCo2BulletChart()
+      initCo2Equivalencies()
+      wireScenarioToggle()
+      wireTimeBtns()
+      wireSolutionModeToggle()
+      updateRealityToggleUI()
+    }, 100)
+  }).catch(err => console.error("Error loading dashboard data:", err))
+}
+
+// ─── Reality toggle UI updater ───────────────────────────────────────────────
+function updateRealityToggleUI() {
+  const textEl  = document.getElementById("reality-text")
+  const btnEl   = document.getElementById("reality-btn")
+  const badgeEl = document.getElementById("reality-badge")
+  if (!textEl || !btnEl) return
+
+  const ml = {
+    simTitle:        "Sacramento Climate Model",
+    solarTitle:      "A City Built for Solar",
+    solarSubtitle:   "Sacramento is one of the most solar-favorable cities in California. Real weather data confirms what the numbers suggest: the sun here is reliable, powerful, and available. The question is never whether solar works. It is whether your system is designed to take full advantage of it.",
+    mistakeTitle:    "The Common Mistake: The Sacramento Exception",
+    mistakeSubtitle: "Sacramento's sun is generous enough to make even a poorly designed system look acceptable on paper. But acceptable is not the same as optimal. Here, the real cost of a bad design is not measured in losses. It is measured in missed opportunity. Every kilowatt your undersized system fails to capture is revenue that never arrives.",
+    fullPicture:     "In Sacramento, a bad design does not bankrupt you. It just leaves most of the opportunity on the table. The gap between these numbers is not a penalty for poor installation. It is the price of settling for less.",
+    batteryTitle:    "The Battery Under Real Skies",
+    batterySubtitle: "The sun here is generous, but not every day. When clouds arrive for several days in a row, the difference between a well-designed and a poorly designed system becomes critical. Less storage capacity runs dry faster than you think. A properly sized one keeps you covered.",
+    bottomLine:      "Both solar systems are in the green. But one barely covers its own shadow. When the sun gives you this much, settling for a small return is a choice, not a limitation.",
+    toggleText:      "You have seen what Sacramento's sun actually looks like. Real clouds, real temperature swings, real irradiance. This is what your panels would actually produce. Now it is time to return to the simulation.",
+    btnText:         "Return to the Simulation",
+  }
+  const syn = {
+    simTitle:        "Simulation Overview",
+    solarTitle:      "Why Solar Energy Matters",
+    solarSubtitle:   "Residential solar systems are transforming how neighborhoods generate electricity. Smart system design reduces costs, lowers emissions, and improves energy independence.",
+    mistakeTitle:    "The Common Mistake",
+    mistakeSubtitle: "Installing solar is not enough. A poorly designed system can leave you almost as dependent on the grid as before, paying nearly the same bills, producing nearly the same emissions.",
+    fullPicture:     "The difference between scenarios is not the technology. It is the design.",
+    batteryTitle:    "The Battery That Runs Dry",
+    batterySubtitle: "Full at noon. Empty at night. Remember those 7 hours? This is what happens inside the battery during that gap. One system arrives at peak demand with something left. The other does not.",
+    bottomLine:      "Only a well-designed system crosses the break-even line. The other two are still paying. One of them has solar panels.",
+    toggleText:      "This simulation runs on perfect math. Clean sine curves, controlled weather, an ideal world. But solar panels do not live in ideal worlds.",
+    btnText:         "Step Into Sacramento's Reality",
+  }
+
+  const t = state.mlMode ? ml : syn
+
+  const simTitle = document.getElementById("ml-sim-title")
+  if (simTitle) simTitle.innerHTML = `<span class="material-icons section-icon">${state.mlMode ? "wb_sunny" : "settings"}</span>${t.simTitle}`
+
+  const solarTitle = document.getElementById("ml-solar-title")
+  if (solarTitle) solarTitle.innerHTML = `<span class="material-icons section-icon">solar_power</span>${t.solarTitle}`
+
+  const el = (id) => document.getElementById(id)
+  if (el("ml-solar-subtitle"))    el("ml-solar-subtitle").textContent    = t.solarSubtitle
+  if (el("ml-mistake-title"))     el("ml-mistake-title").innerHTML       = `<span class="material-icons section-icon">warning</span>${t.mistakeTitle}`
+  if (el("ml-mistake-subtitle"))  el("ml-mistake-subtitle").textContent  = t.mistakeSubtitle
+  if (el("ml-fullpicture-subtitle")) el("ml-fullpicture-subtitle").textContent = t.fullPicture
+  if (el("ml-battery-title"))     el("ml-battery-title").textContent     = t.batteryTitle
+  if (el("ml-battery-subtitle"))  el("ml-battery-subtitle").textContent  = t.batterySubtitle
+  if (el("ml-bottomline-subtitle")) el("ml-bottomline-subtitle").textContent = t.bottomLine
+  if (el("ml-quote")) el("ml-quote").innerHTML = state.mlMode
+    ? "\u201cA privileged sky forgives bad decisions. A good design turns them into revenue.\u201d"
+    : "\u201cThe technology exists. The data is clear.<br>The only variable left is the decision.\u201d"
+
+  textEl.textContent = t.toggleText
+  btnEl.textContent  = t.btnText
+  if (state.mlMode) {
+    btnEl.style.background = "transparent"
+    btnEl.style.border     = "2px solid #2c7a55"
+    btnEl.style.color      = "#2c7a55"
+    if (badgeEl) badgeEl.style.display = "inline-block"
+  } else {
+    btnEl.style.background = "#2c7a55"
+    btnEl.style.border     = "2px solid #2c7a55"
+    btnEl.style.color      = "white"
+    if (badgeEl) badgeEl.style.display = "none"
+  }
+}
+
+// ─── Reality toggle handler ──────────────────────────────────────────────────
+function wireRealityToggle() {
+  const btn = document.getElementById("reality-btn")
+  if (!btn) return
+  btn.addEventListener("click", () => {
+    localStorage.setItem("gg_ml_mode", state.mlMode ? "0" : "1")
+    window.location.href = window.location.pathname
+  })
+}
+
+// ─── Initial load ────────────────────────────────────────────────────────────
+state.mlMode = localStorage.getItem("gg_ml_mode") === "1"
+loadData(state.mlMode ? "data_ml" : "data")
+wireRealityToggle()
+updateRealityToggleUI()
 
 // ─── KPIs ───────────────────────────────────────────────────────────────────
 function populateKPIs() {

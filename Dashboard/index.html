@@ -30,7 +30,7 @@
 
 <!-- SIMULATION OVERVIEW -->
 <section class="act simulation-info">
-  <h2><span class="material-icons section-icon">settings</span>Simulation Overview</h2>
+  <h2 id="ml-sim-title"><span class="material-icons section-icon">settings</span>Simulation Overview</h2>
   <div class="simulation-grid">
     <div class="sim-card"><h3>24</h3><p>Households Simulated</p></div>
     <div class="sim-card"><h3>360</h3><p>Days Simulated</p></div>
@@ -43,8 +43,8 @@
   <div class="intro-grid">
     <div><img src="images/solar-house.jpg" class="intro-img"></div>
     <div>
-      <h2><span class="material-icons section-icon">solar_power</span>Why Solar Energy Matters</h2>
-      <p>Residential solar systems are transforming how neighborhoods generate electricity. Smart system design reduces costs, lowers emissions, and improves energy independence.</p>
+      <h2 id="ml-solar-title"><span class="material-icons section-icon">solar_power</span>Why Solar Energy Matters</h2>
+      <p id="ml-solar-subtitle">Residential solar systems are transforming how neighborhoods generate electricity. Smart system design reduces costs, lowers emissions, and improves energy independence.</p>
     </div>
   </div>
 </section>
@@ -167,15 +167,15 @@
 
 <!-- ACT 2 — THE MISTAKE -->
 <section class="act" id="mistake">
-  <h2><span class="material-icons section-icon">warning</span>The Common Mistake</h2>
-  <p class="section-subtitle">Installing solar is not enough. A poorly designed system can leave you almost as dependent on the grid as before, paying nearly the same bills, producing nearly the same emissions.</p>
+  <h2 id="ml-mistake-title"><span class="material-icons section-icon">warning</span>The Common Mistake</h2>
+  <p id="ml-mistake-subtitle" class="section-subtitle">Installing solar is not enough. A poorly designed system can leave you almost as dependent on the grid as before, paying nearly the same bills, producing nearly the same emissions.</p>
 
   <h3 style="font-size:18px;font-weight:600;margin:40px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">policy</span>How Self-Sufficient Are You, Really?</h3>
   <p class="section-subtitle" style="margin-bottom:24px;">A poorly designed system covers barely half your energy needs. A well-designed one makes you nearly independent.</p>
   <div id="selfSufficiencyGauges" style="display:flex;justify-content:center;gap:80px;flex-wrap:wrap;padding:20px 0 10px;"></div>
 
   <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">summarize</span>The Full Picture</h3>
-  <p class="section-subtitle" style="margin-bottom:20px;">The difference between scenarios is not the technology. It is the design.</p>
+  <p id="ml-fullpicture-subtitle" class="section-subtitle" style="margin-bottom:20px;">The difference between scenarios is not the technology. It is the design.</p>
   <div class="comparison-table-wrapper">
     <table class="comparison-table">
       <tr><th>Scenario</th><th>Annual Cost</th><th>CO₂ Avoided</th><th>Self Sufficiency</th><th>Savings vs No Solar</th></tr>
@@ -184,8 +184,8 @@
   </div>
   <p id="comparison-note" style="font-size:11px;color:#999;margin-top:10px;line-height:1.6;font-family:Poppins,sans-serif;"></p>
 
-  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">battery_alert</span>The Battery That Runs Dry</h3>
-  <p class="section-subtitle" style="margin-bottom:20px;">Full at noon. Empty at night. Remember those 7 hours? This is what happens inside the battery during that gap. One system arrives at peak demand with something left. The other does not.</p>
+  <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">battery_alert</span><span id="ml-battery-title">The Battery That Runs Dry</span></h3>
+  <p id="ml-battery-subtitle" class="section-subtitle" style="margin-bottom:20px;">Full at noon. Empty at night. Remember those 7 hours? This is what happens inside the battery during that gap. One system arrives at peak demand with something left. The other does not.</p>
   <div id="batterySocChart" class="chart"></div>
   <p style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;">Hourly averages computed across all simulated days · Battery SoC at 18h marks the start of peak demand</p>
 
@@ -277,7 +277,7 @@
   </div>
 
   <h3 style="font-size:18px;font-weight:600;margin:50px 0 6px;color:#1e2b24;"><span class="material-icons section-icon" style="font-size:20px;vertical-align:middle;margin-right:6px;">price_check</span>The Bottom Line</h3>
-  <p class="section-subtitle" style="margin-bottom:20px;">Only a well-designed system crosses the break-even line. The other two are still paying. One of them has solar panels.</p>
+  <p id="ml-bottomline-subtitle" class="section-subtitle" style="margin-bottom:20px;">Only a well-designed system crosses the break-even line. The other two are still paying. One of them has solar panels.</p>
   <div id="bulletChart" class="chart"></div>
   <p id="bullet-note" style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;font-family:Poppins,sans-serif;">Net annual cost = grid import cost − grid export revenue · Break-even at $0 · Negative = system earns money</p>
 
@@ -290,7 +290,7 @@
   <div id="co2Equivalencies" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:8px;"></div>
 
   <p style="font-size:20px;font-weight:300;color:#1e2b24;font-family:Poppins,sans-serif;text-align:center;margin:40px auto 36px;max-width:640px;line-height:1.6;letter-spacing:0.01em;">
-    <em>"The technology exists. The data is clear.<br>The only variable left is the decision."</em>
+    <em id="ml-quote">"The technology exists. The data is clear.<br>The only variable left is the decision."</em>
   </p>
 
   <div style="margin-top:24px;padding:20px 24px;background:#f9f9f7;border-radius:10px;border-left:3px solid #c8d8c0;">
@@ -305,6 +305,39 @@
       Secretaría de Medio Ambiente y Recursos Naturales. (2025, February 28). <em>Aviso: Factor de emisión del Sistema Eléctrico Nacional 2024</em>. Comisión Reguladora de Energía. <a href="https://www.gob.mx/cms/uploads/attachment/file/981194/aviso_fesen_2024.pdf" target="_blank" style="color:#2c7a55;">https://www.gob.mx/cms/uploads/attachment/file/981194/aviso_fesen_2024.pdf</a>
     </p>
   </div>
+
+</section>
+
+<!-- REALITY TOGGLE -->
+<section style="background:#1e2b24;padding:80px 6%;text-align:center;">
+
+  <span id="reality-badge" style="
+    display:none;
+    background:#2c7a55;color:white;
+    font-size:11px;font-weight:700;
+    letter-spacing:0.08em;text-transform:uppercase;
+    padding:4px 12px;border-radius:20px;
+    font-family:Poppins,sans-serif;
+    margin-bottom:24px;display:none;
+  ">Real Climate Data Active</span>
+
+  <p id="reality-text" style="
+    font-size:20px;font-weight:300;
+    color:#c8e6d6;
+    font-family:Poppins,sans-serif;
+    max-width:640px;margin:0 auto 36px;
+    line-height:1.8;letter-spacing:0.01em;
+  "></p>
+
+  <button id="reality-btn" style="
+    padding:14px 32px;
+    border-radius:30px;
+    font-size:15px;font-weight:600;
+    font-family:Poppins,sans-serif;
+    cursor:pointer;
+    transition:all 0.25s ease;
+    letter-spacing:0.02em;
+  "></button>
 
 </section>
 

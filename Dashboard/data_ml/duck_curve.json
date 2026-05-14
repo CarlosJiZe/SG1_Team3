@@ -1,0 +1,342 @@
+{
+  "well_designed": [
+    {
+      "hour": 0,
+      "avg_load_kw": 0.6582,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6582,
+      "avg_battery_soc": 54.68
+    },
+    {
+      "hour": 1,
+      "avg_load_kw": 0.6627,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6627,
+      "avg_battery_soc": 52.64
+    },
+    {
+      "hour": 2,
+      "avg_load_kw": 0.662,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.662,
+      "avg_battery_soc": 50.62
+    },
+    {
+      "hour": 3,
+      "avg_load_kw": 0.661,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.661,
+      "avg_battery_soc": 48.59
+    },
+    {
+      "hour": 4,
+      "avg_load_kw": 0.66,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.66,
+      "avg_battery_soc": 46.57
+    },
+    {
+      "hour": 5,
+      "avg_load_kw": 0.6592,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6592,
+      "avg_battery_soc": 44.55
+    },
+    {
+      "hour": 6,
+      "avg_load_kw": 1.6469,
+      "avg_solar_kw": 0.9977,
+      "avg_net_load_kw": 0.6492,
+      "avg_battery_soc": 42.06
+    },
+    {
+      "hour": 7,
+      "avg_load_kw": 1.2294,
+      "avg_solar_kw": 3.2626,
+      "avg_net_load_kw": -2.0331,
+      "avg_battery_soc": 47.69
+    },
+    {
+      "hour": 8,
+      "avg_load_kw": 1.1096,
+      "avg_solar_kw": 5.4542,
+      "avg_net_load_kw": -4.3446,
+      "avg_battery_soc": 60.0
+    },
+    {
+      "hour": 9,
+      "avg_load_kw": 0.6597,
+      "avg_solar_kw": 6.9355,
+      "avg_net_load_kw": -6.2757,
+      "avg_battery_soc": 75.27
+    },
+    {
+      "hour": 10,
+      "avg_load_kw": 0.6656,
+      "avg_solar_kw": 7.8014,
+      "avg_net_load_kw": -7.1358,
+      "avg_battery_soc": 87.12
+    },
+    {
+      "hour": 11,
+      "avg_load_kw": 0.6554,
+      "avg_solar_kw": 8.1965,
+      "avg_net_load_kw": -7.5411,
+      "avg_battery_soc": 94.26
+    },
+    {
+      "hour": 12,
+      "avg_load_kw": 1.51,
+      "avg_solar_kw": 8.2464,
+      "avg_net_load_kw": -6.7364,
+      "avg_battery_soc": 97.22
+    },
+    {
+      "hour": 13,
+      "avg_load_kw": 0.6562,
+      "avg_solar_kw": 8.0409,
+      "avg_net_load_kw": -7.3847,
+      "avg_battery_soc": 98.76
+    },
+    {
+      "hour": 14,
+      "avg_load_kw": 0.6642,
+      "avg_solar_kw": 7.5185,
+      "avg_net_load_kw": -6.8543,
+      "avg_battery_soc": 99.3
+    },
+    {
+      "hour": 15,
+      "avg_load_kw": 0.6633,
+      "avg_solar_kw": 6.3459,
+      "avg_net_load_kw": -5.6826,
+      "avg_battery_soc": 99.48
+    },
+    {
+      "hour": 16,
+      "avg_load_kw": 0.6591,
+      "avg_solar_kw": 4.3492,
+      "avg_net_load_kw": -3.6901,
+      "avg_battery_soc": 99.48
+    },
+    {
+      "hour": 17,
+      "avg_load_kw": 0.6588,
+      "avg_solar_kw": 2.124,
+      "avg_net_load_kw": -1.4652,
+      "avg_battery_soc": 99.16
+    },
+    {
+      "hour": 18,
+      "avg_load_kw": 3.8424,
+      "avg_solar_kw": 0.3222,
+      "avg_net_load_kw": 3.5201,
+      "avg_battery_soc": 88.03
+    },
+    {
+      "hour": 19,
+      "avg_load_kw": 3.8695,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 3.8695,
+      "avg_battery_soc": 75.85
+    },
+    {
+      "hour": 20,
+      "avg_load_kw": 3.8528,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 3.8528,
+      "avg_battery_soc": 63.71
+    },
+    {
+      "hour": 21,
+      "avg_load_kw": 0.6649,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6649,
+      "avg_battery_soc": 61.67
+    },
+    {
+      "hour": 22,
+      "avg_load_kw": 0.9115,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.9115,
+      "avg_battery_soc": 58.74
+    },
+    {
+      "hour": 23,
+      "avg_load_kw": 0.6591,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6591,
+      "avg_battery_soc": 56.72
+    }
+  ],
+  "unadvised": [
+    {
+      "hour": 0,
+      "avg_load_kw": 0.6585,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6585,
+      "avg_battery_soc": 14.21
+    },
+    {
+      "hour": 1,
+      "avg_load_kw": 0.6658,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6658,
+      "avg_battery_soc": 13.11
+    },
+    {
+      "hour": 2,
+      "avg_load_kw": 0.6632,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6632,
+      "avg_battery_soc": 12.14
+    },
+    {
+      "hour": 3,
+      "avg_load_kw": 0.6595,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6595,
+      "avg_battery_soc": 11.27
+    },
+    {
+      "hour": 4,
+      "avg_load_kw": 0.6608,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6608,
+      "avg_battery_soc": 10.51
+    },
+    {
+      "hour": 5,
+      "avg_load_kw": 0.6604,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6604,
+      "avg_battery_soc": 9.84
+    },
+    {
+      "hour": 6,
+      "avg_load_kw": 1.6481,
+      "avg_solar_kw": 0.3764,
+      "avg_net_load_kw": 1.2717,
+      "avg_battery_soc": 8.74
+    },
+    {
+      "hour": 7,
+      "avg_load_kw": 1.2277,
+      "avg_solar_kw": 1.2574,
+      "avg_net_load_kw": -0.0297,
+      "avg_battery_soc": 11.61
+    },
+    {
+      "hour": 8,
+      "avg_load_kw": 1.1103,
+      "avg_solar_kw": 2.2188,
+      "avg_net_load_kw": -1.1085,
+      "avg_battery_soc": 20.28
+    },
+    {
+      "hour": 9,
+      "avg_load_kw": 0.6596,
+      "avg_solar_kw": 2.8658,
+      "avg_net_load_kw": -2.2061,
+      "avg_battery_soc": 35.82
+    },
+    {
+      "hour": 10,
+      "avg_load_kw": 0.6643,
+      "avg_solar_kw": 3.2496,
+      "avg_net_load_kw": -2.5853,
+      "avg_battery_soc": 53.87
+    },
+    {
+      "hour": 11,
+      "avg_load_kw": 0.6537,
+      "avg_solar_kw": 3.4198,
+      "avg_net_load_kw": -2.7661,
+      "avg_battery_soc": 71.17
+    },
+    {
+      "hour": 12,
+      "avg_load_kw": 1.5141,
+      "avg_solar_kw": 3.4443,
+      "avg_net_load_kw": -1.9302,
+      "avg_battery_soc": 79.44
+    },
+    {
+      "hour": 13,
+      "avg_load_kw": 0.6556,
+      "avg_solar_kw": 3.3561,
+      "avg_net_load_kw": -2.7005,
+      "avg_battery_soc": 87.16
+    },
+    {
+      "hour": 14,
+      "avg_load_kw": 0.6626,
+      "avg_solar_kw": 3.1277,
+      "avg_net_load_kw": -2.4651,
+      "avg_battery_soc": 90.92
+    },
+    {
+      "hour": 15,
+      "avg_load_kw": 0.6642,
+      "avg_solar_kw": 2.6038,
+      "avg_net_load_kw": -1.9396,
+      "avg_battery_soc": 92.3
+    },
+    {
+      "hour": 16,
+      "avg_load_kw": 0.6617,
+      "avg_solar_kw": 1.7358,
+      "avg_net_load_kw": -1.0741,
+      "avg_battery_soc": 92.02
+    },
+    {
+      "hour": 17,
+      "avg_load_kw": 0.6579,
+      "avg_solar_kw": 0.8037,
+      "avg_net_load_kw": -0.1458,
+      "avg_battery_soc": 90.29
+    },
+    {
+      "hour": 18,
+      "avg_load_kw": 3.8551,
+      "avg_solar_kw": 0.1214,
+      "avg_net_load_kw": 3.7337,
+      "avg_battery_soc": 61.88
+    },
+    {
+      "hour": 19,
+      "avg_load_kw": 3.8564,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 3.8564,
+      "avg_battery_soc": 36.95
+    },
+    {
+      "hour": 20,
+      "avg_load_kw": 3.874,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 3.874,
+      "avg_battery_soc": 20.91
+    },
+    {
+      "hour": 21,
+      "avg_load_kw": 0.6637,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6637,
+      "avg_battery_soc": 19.05
+    },
+    {
+      "hour": 22,
+      "avg_load_kw": 0.9112,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.9112,
+      "avg_battery_soc": 16.69
+    },
+    {
+      "hour": 23,
+      "avg_load_kw": 0.6599,
+      "avg_solar_kw": 0.0,
+      "avg_net_load_kw": 0.6599,
+      "avg_battery_soc": 15.34
+    }
+  ]
+}

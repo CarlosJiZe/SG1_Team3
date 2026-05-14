@@ -1,0 +1,210 @@
+{
+  "well_designed": {
+    "by_type": [
+      {
+        "household_type": "studio_1_bed",
+        "count": 8,
+        "total_solar_kwh": 109074.9437,
+        "total_load_kwh": 50867.2692,
+        "total_imported_kwh": 158.7704,
+        "total_exported_kwh": 54683.628,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 99.64,
+        "total_net_cost": -491.305,
+        "avg_battery_soc": 68.2,
+        "total_inverter_failures": 12,
+        "total_co2_avoided_kg": 48429.27
+      },
+      {
+        "household_type": "small_family",
+        "count": 8,
+        "total_solar_kwh": 206259.7296,
+        "total_load_kwh": 75700.8748,
+        "total_imported_kwh": 35.2435,
+        "total_exported_kwh": 125086.8404,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 99.96,
+        "total_net_cost": -1126.944,
+        "avg_battery_soc": 74.14,
+        "total_inverter_failures": 33,
+        "total_co2_avoided_kg": 91579.32
+      },
+      {
+        "household_type": "large_family",
+        "count": 8,
+        "total_solar_kwh": 284872.1425,
+        "total_load_kwh": 119346.4804,
+        "total_imported_kwh": 46.8051,
+        "total_exported_kwh": 156934.7801,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 99.97,
+        "total_net_cost": -1413.5232,
+        "avg_battery_soc": 70.44,
+        "total_inverter_failures": 45,
+        "total_co2_avoided_kg": 126483.23
+      }
+    ],
+    "by_wealth": [
+      {
+        "wealth_level": "low",
+        "count": 6,
+        "total_solar_kwh": 141474.2125,
+        "total_load_kwh": 43648.2894,
+        "total_imported_kwh": 53.1988,
+        "total_exported_kwh": 94748.3178,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 99.8,
+        "total_net_cost": -853.5692,
+        "avg_battery_soc": 75.01,
+        "total_inverter_failures": 21,
+        "total_co2_avoided_kg": 62814.55
+      },
+      {
+        "wealth_level": "middle",
+        "count": 6,
+        "total_solar_kwh": 141982.6382,
+        "total_load_kwh": 54576.0595,
+        "total_imported_kwh": 68.9086,
+        "total_exported_kwh": 83544.908,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 99.8,
+        "total_net_cost": -752.2568,
+        "avg_battery_soc": 67.6,
+        "total_inverter_failures": 18,
+        "total_co2_avoided_kg": 63040.29
+      },
+      {
+        "wealth_level": "high",
+        "count": 6,
+        "total_solar_kwh": 150928.4924,
+        "total_load_kwh": 65517.111,
+        "total_imported_kwh": 21.4751,
+        "total_exported_kwh": 80650.0884,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 99.95,
+        "total_net_cost": -726.3647,
+        "avg_battery_soc": 73.57,
+        "total_inverter_failures": 29,
+        "total_co2_avoided_kg": 67012.25
+      },
+      {
+        "wealth_level": "luxury",
+        "count": 6,
+        "total_solar_kwh": 165821.4726,
+        "total_load_kwh": 82173.1646,
+        "total_imported_kwh": 97.2364,
+        "total_exported_kwh": 77761.9342,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 99.88,
+        "total_net_cost": -699.5815,
+        "avg_battery_soc": 67.51,
+        "total_inverter_failures": 22,
+        "total_co2_avoided_kg": 73624.73
+      }
+    ]
+  },
+  "unadvised": {
+    "by_type": [
+      {
+        "household_type": "studio_1_bed",
+        "count": 8,
+        "total_solar_kwh": 57656.6182,
+        "total_load_kwh": 50866.4691,
+        "total_imported_kwh": 9208.8193,
+        "total_exported_kwh": 13116.8097,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 84.07,
+        "total_net_cost": -48.5007,
+        "avg_battery_soc": 42.97,
+        "total_inverter_failures": 10,
+        "total_co2_avoided_kg": 25599.54
+      },
+      {
+        "household_type": "small_family",
+        "count": 8,
+        "total_solar_kwh": 94597.0895,
+        "total_load_kwh": 75838.5136,
+        "total_imported_kwh": 18044.1264,
+        "total_exported_kwh": 33054.2097,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 78.78,
+        "total_net_cost": -161.9233,
+        "avg_battery_soc": 43.36,
+        "total_inverter_failures": 11,
+        "total_co2_avoided_kg": 42001.11
+      },
+      {
+        "household_type": "large_family",
+        "count": 8,
+        "total_solar_kwh": 94250.4247,
+        "total_load_kwh": 119443.2508,
+        "total_imported_kwh": 50501.308,
+        "total_exported_kwh": 21698.5571,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 59.71,
+        "total_net_cost": 184.7507,
+        "avg_battery_soc": 35.62,
+        "total_inverter_failures": 13,
+        "total_co2_avoided_kg": 41847.19
+      }
+    ],
+    "by_wealth": [
+      {
+        "wealth_level": "low",
+        "count": 6,
+        "total_solar_kwh": 61396.4261,
+        "total_load_kwh": 43673.3863,
+        "total_imported_kwh": 7226.5372,
+        "total_exported_kwh": 22484.0139,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 86.8,
+        "total_net_cost": -148.0545,
+        "avg_battery_soc": 49.02,
+        "total_inverter_failures": 10,
+        "total_co2_avoided_kg": 27260.01
+      },
+      {
+        "wealth_level": "middle",
+        "count": 6,
+        "total_solar_kwh": 61851.0292,
+        "total_load_kwh": 54628.1724,
+        "total_imported_kwh": 13690.6079,
+        "total_exported_kwh": 18307.9453,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 78.94,
+        "total_net_cost": -61.7735,
+        "avg_battery_soc": 42.53,
+        "total_inverter_failures": 6,
+        "total_co2_avoided_kg": 27461.86
+      },
+      {
+        "wealth_level": "high",
+        "count": 6,
+        "total_solar_kwh": 61479.819,
+        "total_load_kwh": 65566.2217,
+        "total_imported_kwh": 21981.7292,
+        "total_exported_kwh": 15281.9276,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 70.39,
+        "total_net_cost": 27.9161,
+        "avg_battery_soc": 37.71,
+        "total_inverter_failures": 10,
+        "total_co2_avoided_kg": 27297.04
+      },
+      {
+        "wealth_level": "luxury",
+        "count": 6,
+        "total_solar_kwh": 61776.858,
+        "total_load_kwh": 82280.4531,
+        "total_imported_kwh": 34855.3794,
+        "total_exported_kwh": 11795.6897,
+        "total_curtailed_kwh": 0.0,
+        "avg_self_sufficiency": 60.63,
+        "total_net_cost": 156.2387,
+        "avg_battery_soc": 33.34,
+        "total_inverter_failures": 8,
+        "total_co2_avoided_kg": 27428.92
+      }
+    ]
+  }
+}

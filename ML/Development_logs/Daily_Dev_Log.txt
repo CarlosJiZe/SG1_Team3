@@ -1,0 +1,171 @@
+Date: 2026-05-13
+Team: Team 3
+ 
+Member: Carlos Jiménez Zepeda
+ 
+Summary:
+Today covered the core Phase 3 ML implementation: dataset analysis, feature
+engineering, linear regression training from scratch, simulator integration,
+and the first version of the dashboard reality toggle.
+ 
+Work completed:
+ 
+1) EDA and data preparation (ML/)
+- Analyzed the Sacramento DPV dataset (NSRDB Location ID 151015, 19 MW
+  installation, 2006) using eda.py, generating 16 exploratory figures covering
+  distributions, correlations, and temporal patterns.
+- Identified and resolved a critical timezone mismatch between the Actual Power
+  CSV (local time) and the Weather CSV (UTC), which had inverted all GHI
+  correlations from -0.35 to +0.96 after correction.
+- Built the full cleaning pipeline in feature_engineering.py: resampled Actual
+  Power from 5-minute to 30-minute intervals, merged on datetime, engineered a
+  Cloud_Cover_Ratio feature (GHI / ClearskyGHI), filtered nighttime rows
+  (zenith >= 90 degrees), and saved 8,875 clean daytime rows to
+  ML/output/sacramento_clean.csv.
+ 
+2) Linear regression model from scratch (ML/train.py)
+- Implemented gradient descent from scratch without scikit-learn or any ML
+  library, as required by the assignment.
+- Ran 29 feature combination experiments across four groups: single features,
+  domain groupings, progressive addition, and leave-one-out analysis.
+- Selected model G4_drop_zenith (7 features: GHI, DNI, DHI, temperature,
+  relative humidity, cloud type, Cloud_Cover_Ratio) based on test RMSE of
+  1.676 MW and R2 of 0.792.
+- Compared against two baselines on a fair daytime-only evaluation window:
+  daily average (MAE 3.049 MW) and 4-hour moving average (MAE 1.558 MW).
+  Selected model achieved MAE of 1.354 MW, outperforming both.
+- Saved model weights to ML/output/model_weights.json.
+ 
+3) SolarPredictor bridge class (ML/solar_predictor.py)
+- Built SolarPredictor as a bridge between the trained model and the simulator.
+- Loads model_weights.json and sacramento_clean.csv at initialization.
+- Builds a (month, hour) lookup table with 155 combinations covering daytime
+  hours across all months.
+- Returns a capacity factor per (hour_of_day, day_of_year) call, which the
+  simulator multiplies by panel count and peak power to produce realistic
+  hourly generation in kW.
+ 
+4) Simulator integration
+- Fixed path resolution in Simulation.py: the ML directory is three levels up
+  from Simulator/src/, not two. Changed dirname call count accordingly.
+- Fixed HouseholdSimulation._build_household_config(): the use_ml_solar flag
+  was never passed to individual household configs, causing the ML predictor
+  to silently fall back to math.sin. Added the missing key to the returned dict.
+- Updated main.py to present a config selection submenu when neighborhood mode
+  is chosen, allowing the user to select between standard and ML configs.
+- Updated data_processor.py default paths to point to the two ML simulation
+  results folders.
+ 
+5) ML simulation runs
+- Ran well_designed scenario with ML solar (sim_20260513_133044): 24
+  households, 360 days, LOAD_PRIORITY. Self-sufficiency averaged 99.9%,
+  net neighborhood revenue of $3,032.
+- Ran unadvised scenario with ML solar (sim_20260513_164753): same setup
+  with subdimensioned system sizing. Self-sufficiency averaged 68.4%,
+  near break-even at -$26 net.
+- Generated data_ml/ folder with the five dashboard JSONs using
+  data_processor.py.
+ 
+6) Dashboard reality toggle (first version)
+- Added mlMode: false to the global state object in core.js.
+- Refactored data.js to use a central loadData(folder) function, replacing
+  the original hardcoded fetch block.
+- Added wireRealityToggle() and updateRealityToggleUI() functions to data.js.
+- Added the reality toggle section to index.html: dark background panel at
+  the bottom of the page with narrative text and a mode-switching button.
+ 
+Notes / Issues:
+- The 2006 Sacramento training data is used to simulate a 2024 scenario. This
+  is acceptable because the SolarPredictor aggregates by (month, hour),
+  removing year-specific anomalies and representing typical seasonal behavior.
+- Sacramento's high solar resource caused the unadvised ML scenario to perform
+  significantly better than the synthetic unadvised model, shifting the
+  narrative from loss vs. revenue to break-even vs. significant revenue.
+ 
+AI assistance:
+Used Claude throughout the session for architecture decisions, debugging path
+resolution, identifying the missing use_ml_solar flag, and implementing the
+initial dashboard toggle.
+ 
+Next steps:
+- Fix toggle rendering bugs identified during testing.
+- Add ML-specific narrative text changes to the dashboard.
+- Refine dashboard narrative and visual details.
+ 
+ 
+Date: 2026-05-14
+Team: Team 3
+ 
+Member: Carlos Jiménez Zepeda
+ 
+Summary:
+Today focused on fixing the dashboard toggle bugs identified after yesterday's
+implementation, and adding the full ML narrative text changes across all
+dashboard sections.
+ 
+Work completed:
+ 
+1) Dashboard toggle bug fixes (data.js, index.html)
+- Fixed clearAllCharts(): corrected container IDs from guessed names to actual
+  DOM IDs (costByType, wealthLollipop). Previous IDs were causing SVGs to
+  persist across data reloads, breaking re-renders.
+- Resolved a clientWidth = 0 rendering bug: in-place chart re-rendering was
+  measuring container dimensions before the browser had repainted the layout,
+  producing empty charts. Replaced the in-place reload approach with a
+  localStorage + window.location.href mechanism so the page always loads fresh
+  with correct DOM dimensions.
+- Fixed scroll position on toggle: changed window.location.reload() to
+  window.location.href = window.location.pathname so the page always reloads
+  from the top.
+- Added IDs to 10 text elements in index.html to allow JavaScript-driven
+  content switching between synthetic and ML modes.
+ 
+2) ML narrative text integration (data.js)
+- Expanded updateRealityToggleUI() to switch all narrative texts when toggling
+  between modes. Changes applied:
+    - Simulation Overview title: "Sacramento Climate Model"
+    - Why Solar Energy Matters title: "A City Built for Solar" + new subtitle
+      explaining Sacramento's solar advantage.
+    - The Common Mistake title: "The Common Mistake: The Sacramento Exception"
+      + new subtitle reframing the mistake as missed opportunity rather than
+      direct loss.
+    - The Full Picture subtitle: rewritten to reflect that in Sacramento a bad
+      design does not produce losses, only reduced revenue.
+    - The Battery section title: "The Battery Under Real Skies" + new subtitle
+      addressing multi-day cloudy periods.
+    - The Bottom Line subtitle: rewritten around the idea of settling for small
+      returns when the solar resource is exceptional.
+    - Closing quote: replaced with "A privileged sky forgives bad decisions.
+      A good design turns them into revenue."
+
+3) Configuration templates
+- Created config_ml_template.json for single-household ML runs, documenting
+  all parameters with _help fields. Added a note clarifying that start_date
+  month affects which Sacramento seasonal patterns the predictor uses, while
+  the season field has no effect when use_ml_solar is true.
+- Created neighborhood_config_ml_template.json for neighborhood ML runs,
+  documenting the use_ml_solar flag, the overrides block for switching between
+  well-designed and unadvised scenarios, and the relationship between panel
+  count and ML capacity factor output.
+ 
+4) Single household ML support (main.py)
+- Added config selection submenu to mode 1 (single household), matching the
+  same pattern already in place for mode 2 (neighborhood). Selecting option 2
+  loads config_ml.json instead of config.json, enabling ML solar generation
+  for single-household runs without modifying any source files.
+- Validated the full single household ML flow end to end: predictor loads
+  correctly, simulation runs for 30 days using June Sacramento weather, and
+  all output files are saved to results/.
+ 
+Notes / Issues:
+- The original data.js was used as the clean base for all today's changes to
+  avoid accumulating broken state from previous iterations.
+ 
+AI assistance:
+Used Claude to implement some toggle bug fixes, draft the ML narrative texts,
+and add IDs to the relevant HTML elements.
+ 
+Next steps:
+- Refactor and clean up ML pipeline code for readability.
+- Update README with Phase 3 setup and run instructions.
+- Final dashboard polish and cross-browser testing.

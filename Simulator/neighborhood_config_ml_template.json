@@ -1,0 +1,121 @@
+{
+  "_comment": "GreenGrid Neighborhood Simulation — ML Configuration Template",
+  "_instructions": {
+    "_1": "This config extends the standard neighborhood config with ML solar generation.",
+    "_2": "Set 'use_ml_solar': true to replace the synthetic math.sin() solar curve with predictions from the trained Sacramento linear regression model.",
+    "_3": "When use_ml_solar is true, solar generation is driven by real Sacramento weather data (2006 NSRDB dataset) processed through the model in ML/solar_predictor.py.",
+    "_4": "All other parameters (system sizing, grid, battery, strategy) work identically to the standard config.",
+    "_5": "OVERRIDES: Use the overrides block to set unadvised sizing (fewer panels, 1 inverter, 1 battery) or well-designed sizing (scaled by household type and wealth level).",
+    "_6": "Run via main.py > Mode 2 > Config 2 (ML Realistic)."
+  },
+
+  "simulation": {
+    "duration_days": 360,
+    "_duration_days_help": "360 = full year. Use 30 for quick tests.",
+    "time_step_minutes": 60,
+    "_time_step_minutes_help": "60 = hourly. ML predictor uses hourly (month, hour) lookups.",
+    "start_date": "2024-01-01",
+    "_start_date_help": "Simulation start date. Year does not affect ML predictions since the predictor uses (month, hour) averages from the 2006 Sacramento dataset.",
+    "season": "summer",
+    "_season_help": "Cloud coverage patterns for synthetic fallback only. Has no effect when use_ml_solar is true.",
+    "random_seed": 519425893,
+    "_random_seed_help": "Integer for reproducible results. null = different run each time."
+  },
+
+  "use_ml_solar": true,
+  "_use_ml_solar_help": "true = replace math.sin() solar generation with ML predictions from ML/solar_predictor.py. false = use standard synthetic sinusoidal model.",
+
+  "grid": {
+    "import_cost_per_kwh": 0.0075,
+    "_import_cost_help": "Cost to import energy in $/kWh (0.0075 = 0.75 cents).",
+    "export_revenue_per_kwh": 0.009,
+    "_export_revenue_help": "Revenue from exporting energy in $/kWh (0.009 = 0.9 cents).",
+    "export_limit_kw": 20.0,
+    "_export_limit_help": "Maximum power each household can export to grid in kW."
+  },
+
+  "energy_management": {
+    "strategy": "LOAD_PRIORITY",
+    "_strategy_help": "Applied to all households. Options: LOAD_PRIORITY, CHARGE_PRIORITY, PRODUCE_PRIORITY."
+  },
+
+  "inverter_defaults": {
+    "_comment": "Applied to every inverter unit across all households unless overridden.",
+    "unit_max_output_kw": 4.0,
+    "avr_days_in_failure": 200,
+    "min_failure_duration_hours": 4,
+    "max_failure_duration_hours": 72
+  },
+
+  "battery_defaults": {
+    "_comment": "Applied to every battery unit across all households unless overridden.",
+    "unit_capacity_kwh": 13.5,
+    "_unit_capacity_help": "Capacity per battery unit in kWh (13.5 = Tesla Powerwall).",
+    "efficiency": 0.9,
+    "min_soc": 0.05
+  },
+
+  "solar_defaults": {
+    "_comment": "Peak power per panel. Used by ML predictor: generation_kw = capacity_factor * n_panels * unit_peak_power_kw.",
+    "unit_peak_power_kw": 5.0
+  },
+
+  "household_templates": {
+    "_comment": "Default system sizing per household_type + wealth_level. These are the well-designed counts. For the unadvised scenario, override all houses in the overrides block.",
+    "studio_1_bed": {
+      "low":    { "solar_count": 1, "inverter_count": 1, "battery_count": 1 },
+      "middle": { "solar_count": 1, "inverter_count": 1, "battery_count": 1 },
+      "high":   { "solar_count": 2, "inverter_count": 1, "battery_count": 1 },
+      "luxury": { "solar_count": 2, "inverter_count": 2, "battery_count": 2 }
+    },
+    "small_family": {
+      "low":    { "solar_count": 1, "inverter_count": 1, "battery_count": 1 },
+      "middle": { "solar_count": 2, "inverter_count": 1, "battery_count": 1 },
+      "high":   { "solar_count": 3, "inverter_count": 2, "battery_count": 2 },
+      "luxury": { "solar_count": 4, "inverter_count": 2, "battery_count": 2 }
+    },
+    "large_family": {
+      "low":    { "solar_count": 2, "inverter_count": 1, "battery_count": 1 },
+      "middle": { "solar_count": 3, "inverter_count": 2, "battery_count": 2 },
+      "high":   { "solar_count": 4, "inverter_count": 2, "battery_count": 3 },
+      "luxury": { "solar_count": 5, "inverter_count": 3, "battery_count": 3 }
+    }
+  },
+
+  "neighborhood": {
+    "mode": "manual",
+    "_mode_help": "'auto' for random distribution, 'manual' for exact counts.",
+
+    "auto": {
+      "_comment": "Only active when mode is 'auto'.",
+      "total_households": 22,
+      "type_distribution": {
+        "studio_1_bed": 0.4,
+        "small_family": 0.35,
+        "large_family": 0.25
+      },
+      "wealth_distribution": {
+        "low": 0.25,
+        "middle": 0.35,
+        "high": 0.25,
+        "luxury": 0.15
+      }
+    },
+
+    "manual": {
+      "_comment": "Only active when mode is 'manual'. Generates 2 households per type+wealth combination (24 total).",
+      "counts": {
+        "studio_1_bed": { "low": 2, "middle": 2, "high": 2, "luxury": 2 },
+        "small_family": { "low": 2, "middle": 2, "high": 2, "luxury": 2 },
+        "large_family": { "low": 2, "middle": 2, "high": 2, "luxury": 2 }
+      }
+    },
+
+    "overrides": {
+      "_comment": "Use this block to set unadvised sizing (all 1s for studios, all 2s for families) or remove it entirely to use the well-designed household_templates above.",
+      "_supported_fields": ["solar_count", "inverter_count", "battery_count", "unit_peak_power_kw", "unit_max_output_kw", "unit_capacity_kwh"],
+      "_unadvised_example": "Set solar_count=1, inverter_count=1, battery_count=1 for studios and solar_count=2, inverter_count=1, battery_count=1 for families to simulate a poorly designed installation.",
+      "_well_designed_example": "Remove overrides entirely or match the household_templates counts above."
+    }
+  }
+}

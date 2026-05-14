@@ -100,13 +100,25 @@ def main():
         mode = input("▶ Enter 1 or 2 (or Ctrl+C to cancel): ").strip()
 
         if mode == '2':
+            print("\n SELECT CONFIG:")
+            print("  1. Standard     (neighborhood_config.json)")
+            print("  2. ML Realistic (neighborhood_config_ml.json)")
+            print("-" * 70)
+            cfg_mode = input("▶ Enter 1 or 2: ").strip()
+            cfg_file = "neighborhood_config_ml.json" if cfg_mode == "2" else "neighborhood_config.json"
             neighborhood = HouseholdSimulation(
-                config_path=os.path.join(BASE_DIR, 'neighborhood_config.json')
+                config_path=os.path.join(BASE_DIR, cfg_file)
             )
             input("▶ Press ENTER to start neighborhood simulation: ")
             neighborhood.run()
         else:
-            sim = Simulation(config_path=os.path.join(BASE_DIR, 'config.json'))
+            print("\n SELECT CONFIG:")
+            print("  1. Standard     (config.json)")
+            print("  2. ML Realistic (config_ml.json)")
+            print("-" * 70)
+            cfg_mode = input("▶ Enter 1 or 2: ").strip()
+            cfg_file = "config_ml.json" if cfg_mode == "2" else "config.json"
+            sim = Simulation(config_path=os.path.join(BASE_DIR, cfg_file))
             print_configuration_info(sim.config)
             input("▶ Press ENTER to start simulation: ")
             results = sim.run()

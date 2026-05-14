@@ -171,7 +171,30 @@ class Simulation:
         self.ems = EnergyManagementSystem(
             strategy=self.config['energy_management']['strategy']
         )
-        
+
+        # ML solar predictor (Phase 3)
+        # When use_ml_solar is True in config, the math.sin() solar curve
+        # is replaced by the trained linear regression model using real
+        # Sacramento weather data. Falls back to math.sin if flag is absent.
+        self.use_ml_solar = self.config.get("use_ml_solar", False)
+        self.solar_predictor = None
+
+        if self.use_ml_solar:
+            try:
+                import sys, os
+                ml_dir = os.path.join(os.path.dirname(os.path.dirname(
+                    os.path.dirname(os.path.abspath(__file__)))), "ML")
+                if ml_dir not in sys.path:
+                    sys.path.insert(0, ml_dir)
+                from solar_predictor import SolarPredictor
+                self.solar_predictor = SolarPredictor()
+                if self.verbose:
+                    print("\n[ML] Solar predictor loaded. Using real Sacramento weather data.")
+            except Exception as e:
+                print(f"\n[ML] Warning: could not load SolarPredictor ({e}). "
+                      f"Falling back to math.sin.")
+                self.use_ml_solar = False
+
         # Data collection
         self.hourly_data = []
         self.daily_summaries = []
@@ -263,13 +286,27 @@ class Simulation:
             solar_generated = 0.0
             inverter_detail = {}
 
+            # Day of year is used by the ML predictor to look up the right
+            # monthly weather profile from the Sacramento dataset.
+            day_of_year = current_date.timetuple().tm_yday
+
             #Run through each inverter to calculate available and generated solar power, considering failures
             for i, inv in enumerate(self.inverters):
-                inv_available = self.solar_panel.generate_for_panels(
-                    n_panels = inv.panels_connected,
-                    hour_of_day=hour_of_day,
-                    cloud_coverage=self.current_cloud_coverage
-                )
+
+                # Phase 3: use ML model instead of math.sin when flag is set
+                if self.use_ml_solar and self.solar_predictor is not None:
+                    inv_available = self.solar_predictor.get_generation_kw(
+                        hour_of_day=hour_of_day,
+                        day_of_year=day_of_year,
+                        n_panels=inv.panels_connected,
+                        peak_power_kw=self.config['solar']['unit_peak_power_kw']
+                    )
+                else:
+                    inv_available = self.solar_panel.generate_for_panels(
+                        n_panels = inv.panels_connected,
+                        hour_of_day=hour_of_day,
+                        cloud_coverage=self.current_cloud_coverage
+                    )
                 inv_generated = inv.apply_limit(inv_available)
             
                 solar_available += inv_available

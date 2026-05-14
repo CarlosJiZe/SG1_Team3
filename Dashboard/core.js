@@ -20,6 +20,7 @@ const HH_TYPE_LABELS = {
 // ─── Single state object (replaces all scattered `let` globals) ────────────
 const state = {
   allData:               {},
+  mlMode:                false,
   currentDuckScenario:   "well_designed",
   currentTimeScenario:   "well_designed",
   currentScatterScenario:"well_designed",

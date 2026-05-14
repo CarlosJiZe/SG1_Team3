@@ -1,0 +1,78 @@
+{
+  "_comment": "GreenGrid Single Household Simulation — ML Configuration Template",
+  "_instructions": {
+    "_1": "This config runs a single-household simulation with ML solar generation.",
+    "_2": "Set 'use_ml_solar': true to replace the synthetic math.sin() solar curve with predictions from the trained Sacramento linear regression model.",
+    "_3": "When use_ml_solar is true, solar generation is driven by real Sacramento weather data (2006 NSRDB dataset) processed through the model in ML/solar_predictor.py.",
+    "_4": "Run via main.py > Mode 1 (Single household)."
+  },
+
+  "simulation": {
+    "duration_days": 30,
+    "_duration_days_help": "Simulation length in days. Use 30 for monthly, 360 for full year.",
+    "time_step_minutes": 60,
+    "_time_step_minutes_help": "60 = hourly. ML predictor uses hourly (month, hour) lookups.",
+    "start_date": "2024-06-01",
+    "_start_date_help": "Simulation start date. Year does not affect ML predictions since the predictor uses (month, hour) averages from the 2006 Sacramento dataset. Month does matter: it determines which Sacramento seasonal patterns are used.",
+    "season": "winter",
+    "_season_help": "Cloud coverage patterns for synthetic fallback only. Has no effect when use_ml_solar is true.",
+    "random_seed": 519425893,
+    "_random_seed_help": "Integer for reproducible results. null = different run each time."
+  },
+
+  "use_ml_solar": true,
+  "_use_ml_solar_help": "true = replace math.sin() solar generation with ML predictions from ML/solar_predictor.py. false = use standard synthetic sinusoidal model.",
+
+  "battery": {
+    "unit_capacity_kwh": 13.5,
+    "_unit_capacity_help": "Capacity per battery unit in kWh (13.5 = Tesla Powerwall).",
+    "count": 2,
+    "_count_help": "Number of battery units. Total capacity = unit_capacity_kwh * count.",
+    "efficiency": 0.9,
+    "_efficiency_help": "Round-trip efficiency as decimal (0.9 = 90%).",
+    "min_soc": 0.05,
+    "_min_soc_help": "Minimum state of charge as decimal (0.05 = 5%). Protects battery health."
+  },
+
+  "solar": {
+    "unit_peak_power_kw": 5.0,
+    "_unit_peak_help": "Peak power per panel in kW. Used by ML predictor: generation_kw = capacity_factor * count * unit_peak_power_kw.",
+    "count": 3,
+    "_count_help": "Number of solar panels."
+  },
+
+  "inverter": {
+    "unit_max_output_kw": 4.0,
+    "_unit_max_help": "Max output per inverter unit in kW. Solar generation is clipped to this limit.",
+    "count": 2,
+    "_count_help": "Number of inverter units. Total max output = unit_max_output_kw * count.",
+    "avr_days_in_failure": 200,
+    "_avr_days_help": "Average days between inverter failures. Uses exponential distribution.",
+    "min_failure_duration_hours": 4,
+    "max_failure_duration_hours": 72
+  },
+
+  "load": {
+    "base_load_kw": 0.5,
+    "_base_load_help": "Constant baseline consumption in kW (fridge, router, standby devices).",
+    "peak_hours_max_kw": 3.0,
+    "_peak_hours_help": "Maximum additional load during peak hours in kW (cooking, TV, etc.).",
+    "peak_hours_start": 18,
+    "peak_hours_end": 21,
+    "_peak_hours_range_help": "Peak demand window in 24h format. Default is 18-21h (evening)."
+  },
+
+  "grid": {
+    "import_cost_per_kwh": 0.0075,
+    "_import_cost_help": "Cost to import energy in $/kWh (0.0075 = 0.75 cents).",
+    "export_revenue_per_kwh": 0.009,
+    "_export_revenue_help": "Revenue from exporting energy in $/kWh (0.009 = 0.9 cents).",
+    "export_limit_kw": 20.0,
+    "_export_limit_help": "Maximum power the household can export to the grid in kW."
+  },
+
+  "energy_management": {
+    "strategy": "LOAD_PRIORITY",
+    "_strategy_help": "Options: LOAD_PRIORITY (power house first), CHARGE_PRIORITY (charge battery first), PRODUCE_PRIORITY (export first)."
+  }
+}

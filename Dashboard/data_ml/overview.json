@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-05-13 16:57:45",
+  "scenarios": [
+    {
+      "scenario": "no_solar",
+      "scenario_label": "No Solar",
+      "total_solar_kwh": 0.0,
+      "total_load_kwh": 245914.62,
+      "total_imported_kwh": 245914.62,
+      "total_exported_kwh": 0.0,
+      "total_curtailed_kwh": 0.0,
+      "total_net_cost": 1844.33,
+      "avg_self_sufficiency": 0.0,
+      "co2_avoided_kg": 0.0,
+      "co2_baseline_kg": 109186.1,
+      "co2_reduction_percent": 0.0
+    },
+    {
+      "scenario": "unadvised",
+      "scenario_label": "Unadvised System",
+      "total_solar_kwh": 246504.13,
+      "total_load_kwh": 246148.23,
+      "total_imported_kwh": 77754.25,
+      "total_exported_kwh": 67869.58,
+      "total_curtailed_kwh": 0.0,
+      "total_net_cost": -25.67,
+      "avg_self_sufficiency": 68.41,
+      "co2_avoided_kg": 109447.83,
+      "co2_baseline_kg": 109289.82,
+      "co2_reduction_percent": 100.14,
+      "cost_savings_vs_no_solar": 1870.0
+    },
+    {
+      "scenario": "well_designed",
+      "scenario_label": "Well Designed System",
+      "total_solar_kwh": 600206.82,
+      "total_load_kwh": 245914.62,
+      "total_imported_kwh": 240.82,
+      "total_exported_kwh": 336705.25,
+      "total_curtailed_kwh": 0.0,
+      "total_net_cost": -3031.77,
+      "avg_self_sufficiency": 99.9,
+      "co2_avoided_kg": 266491.83,
+      "co2_baseline_kg": 109186.09,
+      "co2_reduction_percent": 244.07,
+      "cost_savings_vs_no_solar": 4876.1
+    }
+  ],
+  "co2_factor_kg_per_kwh": 0.444,
+  "co2_reference": "Secretaria de Medio Ambiente y Recursos Naturales. (2025, February 28). Aviso: Factor de emision del Sistema Electrico Nacional 2024. Comision Reguladora de Energia. https://www.gob.mx/cms/uploads/attachment/file/981194/aviso_fesen_2024.pdf"
+}

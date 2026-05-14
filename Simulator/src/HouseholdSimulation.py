@@ -275,7 +275,8 @@ class HouseholdSimulation:
                 'wealth_level': household['wealth_level']
             },
             'grid': cfg['grid'],
-            'energy_management': cfg['energy_management']
+            'energy_management': cfg['energy_management'],
+            'use_ml_solar': cfg.get('use_ml_solar', False)
         }  
 
     # ── NEIGHBORHOOD SUMMARY ─────────────────────────────────────────────────  
@@ -314,4 +315,3 @@ class HouseholdSimulation:
             json.dump(summary, f, indent=2)
 
         print(f"\n  Summary saved to: {path}")
-
